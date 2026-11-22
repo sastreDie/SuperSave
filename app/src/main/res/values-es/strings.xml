@@ -1,0 +1,4 @@
+<resources>
+    <!-- D22: Spanish translations. Same names as values/strings.xml -->
+    <string name="placeholder_home">SuperSave existe. Siguiente: el motor del presupuesto.</string>
+</resources>

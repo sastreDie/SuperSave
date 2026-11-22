@@ -22,11 +22,11 @@ Only those two options. Default: Monday.
 - Every expense lowers **left this week** immediately.
 - The main number is *how much you have left*, not *how much you should spend*.
 
-### D4. Payday mid-week does not change this week's budget (Diego)
-The new income counts at the **next** weekly recalculation.
-The UI shows a badge: **"Pay day this week!"**
+### D4. Money received mid-week counts starting next week (Diego)
+This week's budget never changes because money arrived. New income only enters
+the calculation at the **next** week start.
 
-### D5. Surplus and overspending are spread across all remaining weeks (Diego)
+### D5. Surplus and overspending are spread across all remaining weeks of the month (Diego)
 Underspending → every remaining week gets a bit more.
 Overspending → every remaining week gets a bit less (a gentler hit than taking it all from next week).
 
@@ -45,6 +45,7 @@ Compare this week's budget to last week's:
 - Start of month
 - Biweekly / quincena (15th and end of month)
 - Every N days (from a start date)
+- Day of month, e.g. "the 10th" (added in D23)
 
 ### D9. Monthly review of savings performance (Diego)
 - During the month, surplus flows into the remaining weeks (D5).
@@ -67,40 +68,112 @@ and WorkManager plumbing, test harness. Diego and David write the core: the
 budget engine, Weigh the payment logic, schedule rules, data model decisions.
 Every AI contribution goes in `AI_USAGE.md`.
 
+### D12. The budget is always weekly; the month is the goal (Diego)
+The calendar month is the planning horizon: savings goal, fixed payments and
+the review (D9) are monthly. But the user only ever sees a **weekly** budget,
+and every weekly budget is calculated to protect the monthly goal.
+
+### D13. Heads-up badges for the week (Diego)
+- **"Pay day this week!"** when an income is expected this week.
+- **"Payment due this week"** when a fixed payment is expected this week
+  (e.g. "Claude subscription, the 10th").
+
+### D14. The app tracks the balance; "Correct my balance" is essential (Diego)
+The user enters the balance once at setup. From then on:
+`balance = starting balance + incomes − expenses − fixed payments`.
+**Correct my balance** lets the user type the real bank balance at any time.
+It must be easy to find.
+
+### D15. Fixed payments are auto-deducted, and the user can cancel them (Diego)
+- Each fixed payment is reserved in the budget and deducted on its date automatically.
+- The user can edit or **cancel** one (e.g. cancelled a subscription). From then
+  on it is no longer expected; past deductions stay in the history.
+
+### D16. Languages (Diego)
+- **App (UI, code, commits): English.** It's how Diego will use it.
+- **Assignment documentation (report, AI appendix): Spanish.**
+- `DESIGN.md` is a working document in English. Its content goes into the Spanish
+  report later.
+
+### D17. A week that crosses a month boundary is split by days (Diego)
+Mon Mar 30 to Sun Apr 5: 2 days are paid from March's money and 5 days from
+April's. This also means 5-week months don't get thinner weeks: money is
+spread over **days left in the month**, not "weeks left".
+
+### D18. Balance corrections count immediately (Diego)
+The difference (up or down) is spread right away across the rest of the
+month, **including the current week**. This is the one exception to the frozen
+weekly budget (D3) and to "income counts next week" (D4): a correction fixes a
+mistake, it isn't new money.
+
+### D19. The conservative quincena effect is accepted (Diego)
+Only money already received counts (D4), so the first half of the month is
+tighter and the second half more generous. Diego chose this as the most
+effective way to save. It's a prototype Diego will keep using, so the model can
+be changed later if it doesn't work in practice.
+
+### D20. Each part of a split week freezes at its own start (Diego)
+Mon Mar 30 to Sun Apr 5 with salary on Mar 31: March's 2 days freeze on Mar 30,
+and April's 5 days freeze on **Apr 1**, after the salary has arrived. The user
+sees one week whose "left this week" jumps up on the 1st. The month review (D9)
+happens at the end of the **month**, not the end of the week.
+
+### D21. Month review default is "Keep it", and the user can change it (Diego)
+If the month hasn't been reviewed when the new month starts, the surplus is
+**kept** as savings. When setting up the savings plan, the user can pick their
+default (Keep it / Spend it). Choosing "Spend it" later adds the money back like
+a correction (D18).
+
+### D22. English and Spanish from day one (Diego)
+All on-screen text lives in `res/values/strings.xml` (English) and
+`res/values-es/strings.xml` (Spanish). No hardcoded text in the code. Every new
+string gets both versions in the same commit.
+
+### D23. Data model decisions (Diego)
+- 5th schedule preset: **day of month** (e.g. "the 10th").
+- **No expense categories** in the prototype.
+- "Keep it" is stored as a `SAVINGS_TRANSFER` transaction.
+- Recurring incomes and fixed payments are **separate tables**.
+
+### D24. Savings bucket, plus a tip to keep savings separate (Diego)
+The app tracks saved money as a bucket inside the balance
+(`spendable = balance − saved`), so it works whether or not savings leave the
+account. During setup, the app **recommends** keeping savings apart, either in
+an *apartado*/*cajita* or in a different savings account.
+
 ---
 
-## Draft formula (to be confirmed, see Q1)
+## Formula draft (with D17 and D18)
 
+The unit of calculation is a **segment**: the part of a week that falls inside
+one month. A normal week is one segment. A week that crosses a month boundary
+is two segments (D17).
+
+When a segment starts:
 ```
-freeMoney  = balance
-           + expected income before horizon end
-           − fixed payments due before horizon end
-           − savings goal still to set aside
+freeMoney     = balance (money already received, D4)
+              − fixed payments still due this month (D15)
+              − savings goal still to set aside this month
 
-weekBudget = freeMoney × (days of this week inside horizon ÷ days left in horizon)
-leftThisWeek = weekBudget − spent this week
+segmentBudget = freeMoney × (days in this segment ÷ days left in the month)
+```
+The number the user sees:
+```
+weekBudget   = sum of the week's segment budgets
+leftThisWeek = weekBudget − expenses this week
+```
+On a balance correction (D18):
+```
+segmentBudget += difference × (days left in this segment ÷ days left in the month)
 ```
 
-Recalculating `weekBudget` at each week start from the *real* balance is what
-spreads surplus/overspending across the remaining weeks (D5): no extra
-bookkeeping is needed.
+Example: ₱3,000 free on Nov 1 (30 days). A full 7-day week gets
+3,000 × 7 ÷ 30 = **₱700**. Spend only ₱500, and next week the free money is
+₱2,500 over 23 days → 2,500 × 7 ÷ 23 = **₱761**, which shows "Good job!" (D6).
+That is D5 working by itself.
 
 ---
 
 ## Open questions
 
-- **Q1. Planning horizon.** With many incomes, "days until payday" is ambiguous.
-  Proposal: use the **calendar month** as the horizon, since the savings goal and
-  the review (D9) are already monthly.
-- **Q2. Counting income before it arrives.** With a month horizon, does the
-  quincena on the 15th count toward the budget on the 1st? Counting it gives
-  smoother weeks, but you could spend money you don't have yet if big fixed
-  payments come early.
-- **Q3. Weeks that cross a month boundary** (e.g. Mon Oct 27 to Sun Nov 2).
-  Which month's budget pays for which days?
-- **Q4. Where does the balance come from after setup?** Proposal: the user enters
-  it once, then the app tracks it (balance = start + incomes − expenses −
-  payments), with a "correct my balance" button for when it drifts from the bank.
-- **Q5. Are fixed payments auto-deducted on their date,** or does the user mark
-  them as paid?
-- **Q6. Language of the app UI and the code/docs:** Spanish or English?
+None right now.

@@ -1,0 +1,4 @@
+<resources>
+    <!-- Window theme only. The real colors live in Compose (ui/theme/Theme.kt). -->
+    <style name="Theme.SuperSave" parent="android:Theme.Material.Light.NoActionBar" />
+</resources>

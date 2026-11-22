@@ -1,0 +1,5 @@
+<resources>
+    <!-- D22: every string here must also exist in values-es/strings.xml -->
+    <string name="app_name" translatable="false">SuperSave</string>
+    <string name="placeholder_home">SuperSave exists. Next: the budget engine.</string>
+</resources>
