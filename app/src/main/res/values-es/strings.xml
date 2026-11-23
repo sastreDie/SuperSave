@@ -1,4 +1,78 @@
 <resources>
     <!-- D22: Spanish translations. Same names as values/strings.xml -->
-    <string name="placeholder_home">SuperSave existe. Siguiente: el motor del presupuesto.</string>
+
+    <string name="debug_title">Depuración: esta semana</string>
+    <string name="debug_not_set_up">Aún no hay datos. Toca \"Cargar datos de prueba\".</string>
+    <string name="debug_week">Semana: %1$s a %2$s</string>
+    <string name="debug_week_budget">Presupuesto de la semana: %1$s</string>
+    <string name="debug_spent">Gastado: %1$s</string>
+    <string name="debug_last_week">Presupuesto de la semana pasada: %1$s</string>
+    <string name="debug_load">Cargar datos de prueba</string>
+    <string name="debug_add_expense">Agregar gasto de $100 hoy</string>
+    <string name="debug_clear">Borrar todos los datos</string>
+
+    <string name="setup_step_of">Paso %1$d de %2$d</string>
+    <string name="setup_back">Atrás</string>
+    <string name="setup_next">Siguiente</string>
+    <string name="setup_finish">Empezar a ahorrar</string>
+    <string name="setup_add">Agregar</string>
+    <string name="setup_remove">Quitar</string>
+    <string name="setup_money_error">Escribe una cantidad, como 1,250.50</string>
+
+    <string name="setup_welcome_title">Bienvenido a SuperSave</string>
+    <string name="setup_welcome_body">Vamos a configurar tu presupuesto semanal. Toma como un minuto.</string>
+    <string name="setup_week_start_question">¿Qué día empieza tu semana?</string>
+    <string name="monday">Lunes</string>
+    <string name="sunday">Domingo</string>
+
+    <string name="setup_balance_title">¿Cuánto dinero tienes?</string>
+    <string name="setup_balance_body">Revisa tu app del banco y escribe tu saldo actual. Puedes corregirlo cuando quieras.</string>
+    <string name="setup_balance_label">Saldo actual</string>
+
+    <string name="setup_incomes_title">Dinero que recibes</string>
+    <string name="setup_incomes_body">Agrega tu sueldo, beca o cualquier dinero que llegue con fecha fija. Si no tienes, sáltate este paso.</string>
+    <string name="setup_incomes_empty">Aún no hay ingresos.</string>
+    <string name="setup_add_income">Agregar ingreso</string>
+
+    <string name="setup_payments_title">Pagos fijos</string>
+    <string name="setup_payments_body">Renta, suscripciones, servicios: todo lo que pagas con fecha fija. SuperSave aparta este dinero antes de calcular tu presupuesto.</string>
+    <string name="setup_payments_empty">Aún no hay pagos fijos.</string>
+    <string name="setup_add_payment">Agregar pago</string>
+
+    <string name="setup_name">Nombre</string>
+    <string name="setup_amount">Cantidad</string>
+    <string name="setup_how_often">¿Cada cuándo?</string>
+    <string name="setup_every_n_label">¿Cada cuántos días?</string>
+    <string name="setup_next_date">El próximo: %1$s</string>
+    <string name="setup_day_of_month_label">Día del mes (1–31)</string>
+
+    <string name="setup_savings_title">Tu meta de ahorro</string>
+    <string name="setup_savings_body">¿Cuánto quieres ahorrar cada mes? Déjalo vacío si todavía no tienes una meta.</string>
+    <string name="setup_savings_label">Meta de ahorro mensual</string>
+    <string name="setup_review_question">Si en un mes gastas menos de lo planeado:</string>
+    <string name="review_keep">Guardarlo: lo extra se va a tus ahorros</string>
+    <string name="review_spend">Gastarlo: lo extra aumenta el presupuesto del siguiente mes</string>
+    <string name="setup_review_note">Puedes elegir cada mes. Esto es lo que pasa si no eliges.</string>
+    <string name="setup_savings_tip">Consejo: guarda tus ahorros aparte, en un apartado, una cajita o una cuenta de ahorro distinta. El dinero que no ves es más fácil no gastarlo.</string>
+
+    <string name="schedule_end_of_month">Fin de mes</string>
+    <string name="schedule_start_of_month">Inicio de mes</string>
+    <string name="schedule_biweekly">Quincena (el 15 y fin de mes)</string>
+    <string name="schedule_every_n_days">Cada ciertos días</string>
+    <string name="schedule_day_of_month">Un día del mes</string>
+    <string name="schedule_day_of_month_summary">El día %1$d de cada mes</string>
+    <plurals name="schedule_every_n_summary">
+        <item quantity="one">Cada día, desde el %2$s</item>
+        <item quantity="many">Cada %1$d días, el próximo el %2$s</item>
+        <item quantity="other">Cada %1$d días, el próximo el %2$s</item>
+    </plurals>
+
+    <string name="widget_description">Cuánto te queda esta semana</string>
+    <string name="widget_no_data">Abre SuperSave para configurarlo</string>
+
+    <string name="left_this_week">Te queda esta semana</string>
+    <string name="payday_badge">¡Esta semana es día de pago!</string>
+    <string name="payment_due_badge">Pago esta semana: %1$s</string>
+    <string name="trend_up">¡Buen trabajo! Tu presupuesto subió esta semana gracias a tus hábitos de gasto.</string>
+    <string name="trend_down">La semana pasada nos pegó un poco, así que el presupuesto de esta semana es un poco menor.</string>
 </resources>

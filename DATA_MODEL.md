@@ -53,7 +53,10 @@ account).
 
 ## Tables
 
-### `Transaction`: every movement of money
+### `LedgerEntry` (table `ledger`): every movement of money
+Called `Transaction` in earlier drafts. Renamed because Room already has an
+`@Transaction` annotation and `TRANSACTION` is an SQL keyword. Where this doc
+says "transaction row", it means a `LedgerEntry`.
 | Field | Type | Notes |
 |---|---|---|
 | id | Long | auto |
@@ -74,6 +77,7 @@ No categories (D23).
 | name | String | "Beca", "Salary" |
 | amount | Long (cents) | |
 | schedule | Schedule | embedded, see below |
+| note | String? | optional, e.g. "Deposited to Nu" |
 | endedOn | LocalDate? | null = active |
 
 ### `FixedPayment`
@@ -83,6 +87,7 @@ No categories (D23).
 | name | String | "Rent", "Claude subscription" |
 | amount | Long (cents) | |
 | schedule | Schedule | embedded, see below |
+| note | String? | optional, e.g. "Paid with the BBVA card" |
 | cancelledOn | LocalDate? | D15: null = active. A date instead of deleting, so past deductions keep their link |
 
 ### `Schedule`: a shared piece embedded in both tables

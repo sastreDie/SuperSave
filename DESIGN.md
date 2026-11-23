@@ -68,6 +68,19 @@ and WorkManager plumbing, test harness. Diego and David write the core: the
 budget engine, Weigh the payment logic, schedule rules, data model decisions.
 Every AI contribution goes in `AI_USAGE.md`.
 
+**Update (Nov 22):** after writing the first tables and engine functions by hand,
+Diego asked Claude to write the remaining repetitive pieces: the table classes and
+the calendar helpers (`Calendar.kt`: week splitting; `ScheduleRules.kt`: schedule
+dates). The **money logic** (free money, segment budget, left this week,
+corrections, Weigh the payment) stays Diego's: it's the core of the app.
+
+**Update 2 (Nov 22):** after writing `freeMoney` by hand, Diego found the rest of
+the money formulas simple and asked Claude to write them (`segmentBudget`,
+`weekBudget`, `leftThisWeek`, `correctionForSegment`, `paymentsDueIn`,
+`budgetTrend`). Diego designed every formula (D3, D5, D17, D18, D25). He wants to
+spend his hands-on time on the technical part, starting with the **widget**,
+which he will write himself with Claude explaining.
+
 ### D12. The budget is always weekly; the month is the goal (Diego)
 The calendar month is the planning horizon: savings goal, fixed payments and
 the review (D9) are monthly. But the user only ever sees a **weekly** budget,
@@ -140,6 +153,32 @@ The app tracks saved money as a bucket inside the balance
 (`spendable = balance − saved`), so it works whether or not savings leave the
 account. During setup, the app **recommends** keeping savings apart, either in
 an *apartado*/*cajita* or in a different savings account.
+
+### D25. Free money can be negative (Diego)
+If bills plus the savings goal are more than the money you have, `freeMoney`
+returns a negative number instead of stopping at zero. People who are in the
+red need a saving tool too. The app can then say *how far* from the goal you
+are, in an informative tone (D6).
+
+### D26. Money divisions round down (Claude, accepted by Diego)
+Splitting money across days leaves fractions of a cent. They always round
+**down**: ₱760.869 → ₱760.86, and −₱233.333 → −₱233.34. The leftover cents stay
+in free money, so the app never shows more money than there really is.
+
+### D27. Money dated on a segment's first day counts in the next segment (Claude, to confirm)
+A segment freezes using only ledger entries dated **before** its start. A salary
+that lands on Monday (the week start) or on the 1st waits until the next
+segment, which is D4 taken literally. Segments freeze lazily: the first time the
+app or the widget asks about the week, using the balance as of the segment's
+start, so opening the app on Wednesday gives the same budget as on Monday.
+
+### D28. Setup dates the starting balance so the first week isn't empty (Claude, to confirm)
+Because of D27, a balance dated today wouldn't count until the next segment, so
+setting up on a Wednesday would give a ₱0 week. Setup instead dates the starting
+balance the day **before** the current segment starts, so this week freezes with
+it. Incomes and payments added during setup start counting **from today**
+(`anchorDate` = today): earlier ones are already part of the balance you typed.
+A payment due today is still treated as upcoming, which is the cautious choice (D19).
 
 ---
 
