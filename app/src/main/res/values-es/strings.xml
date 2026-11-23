@@ -1,14 +1,7 @@
 <resources>
     <!-- D22: Spanish translations. Same names as values/strings.xml -->
 
-    <string name="debug_title">Depuración: esta semana</string>
-    <string name="debug_not_set_up">Aún no hay datos. Toca \"Cargar datos de prueba\".</string>
-    <string name="debug_week">Semana: %1$s a %2$s</string>
-    <string name="debug_week_budget">Presupuesto de la semana: %1$s</string>
-    <string name="debug_spent">Gastado: %1$s</string>
-    <string name="debug_last_week">Presupuesto de la semana pasada: %1$s</string>
     <string name="debug_load">Cargar datos de prueba</string>
-    <string name="debug_add_expense">Agregar gasto de $100 hoy</string>
     <string name="debug_clear">Borrar todos los datos</string>
 
     <string name="setup_step_of">Paso %1$d de %2$d</string>
@@ -66,6 +59,47 @@
         <item quantity="many">Cada %1$d días, el próximo el %2$s</item>
         <item quantity="other">Cada %1$d días, el próximo el %2$s</item>
     </plurals>
+
+    <string name="home_week">%1$s – %2$s</string>
+    <string name="home_budget_spent">Presupuesto %1$s · gastado %2$s</string>
+    <string name="weigh_button">Pesar un pago</string>
+    <string name="correct_button">Corregir mi saldo (%1$s)</string>
+    <string name="home_expenses_title">Gastos de esta semana</string>
+    <string name="home_expenses_empty">Aún no has gastado nada esta semana.</string>
+    <string name="home_expense_no_note">Gasto</string>
+    <string name="home_delete_title">¿Quitar este gasto?</string>
+    <string name="home_delete_body">Los %1$s regresan al presupuesto de esta semana.</string>
+
+    <string name="weigh_title">Pesar un pago</string>
+    <string name="weigh_body">Escribe cuánto cuesta para ver cómo cabe en tu presupuesto antes de pagar.</string>
+    <string name="weigh_amount">¿Cuánto cuesta?</string>
+    <string name="weigh_note">¿Qué es? (opcional)</string>
+    <string name="weigh_skip">Ahora no</string>
+    <string name="weigh_register">Registrar pago</string>
+    <string name="weigh_fits">¡Sí cabe! Te quedarían %1$s esta semana.</string>
+    <string name="weigh_over">Son %1$s más de lo que te queda esta semana.</string>
+    <string name="weigh_spread">Lo extra se reparte en el resto del mes: cada semana tendrá unos %1$s menos.</string>
+    <string name="weigh_last_week">Es la última semana del mes, así que lo extra sale de los ahorros de este mes.</string>
+    <string name="weigh_savings_dip">Usaría %1$s de tu meta de ahorro.</string>
+
+    <string name="correct_title">Corregir mi saldo</string>
+    <string name="correct_body">Abre tu app del banco y escribe el saldo que ves. La diferencia cuenta de inmediato, incluida esta semana.</string>
+    <string name="correct_tracked">SuperSave cree que tienes %1$s</string>
+    <string name="correct_label">Saldo real</string>
+    <string name="correct_more">Son %1$s más de lo que SuperSave tenía.</string>
+    <string name="correct_less">Son %1$s menos de lo que SuperSave tenía.</string>
+    <string name="correct_same">Es justo lo que SuperSave tiene.</string>
+    <string name="correct_save">Guardar</string>
+
+    <string name="settings_title">Ajustes</string>
+    <string name="settings_next_week_note">El presupuesto de esta semana ya está fijo, así que los cambios cuentan desde la próxima semana.</string>
+    <string name="settings_save_goal">Guardar meta</string>
+    <string name="settings_save">Guardar</string>
+    <string name="settings_edit">Editar</string>
+    <string name="settings_stop">Quitar</string>
+    <string name="settings_stop_title">¿Quitar %1$s?</string>
+    <string name="settings_stop_income_body">SuperSave ya no esperará este dinero. Lo que ya recibiste se queda en tu historial.</string>
+    <string name="settings_stop_payment_body">SuperSave ya no apartará dinero para este pago. Los pagos anteriores se quedan en tu historial.</string>
 
     <string name="widget_description">Cuánto te queda esta semana</string>
     <string name="widget_no_data">Abre SuperSave para configurarlo</string>

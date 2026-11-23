@@ -2,6 +2,7 @@ package com.diegodavid.supersave.engine
 
 import com.diegodavid.supersave.data.FixedPayment
 import com.diegodavid.supersave.data.RecurringIncome
+import com.diegodavid.supersave.data.Schedule
 import java.time.LocalDate
 
 // Glue between the money formulas and the data. Written by Claude at Diego's request.
@@ -25,6 +26,17 @@ fun freezeSegmentBudget(
         savingsGoal = monthlySavingsGoal,
     )
     return segmentBudget(free, segment.days, daysLeftInMonth(segment.start))
+}
+
+/**
+ * The dates on which a recurring income or fixed payment has come due, from its
+ * anchorDate up to [today] included (D15). [stoppedOn] is cancelledOn / endedOn:
+ * nothing counts from that day on. The repository writes one ledger row per date.
+ */
+fun dueDates(schedule: Schedule, stoppedOn: LocalDate?, today: LocalDate): List<LocalDate> {
+    if (schedule.anchorDate > today) return emptyList()
+    return occurrencesIn(schedule, DateRange(schedule.anchorDate, today))
+        .filter { stoppedOn == null || it < stoppedOn }
 }
 
 /** "Pay day this week!" (D13): an active recurring income falls inside [week]. */

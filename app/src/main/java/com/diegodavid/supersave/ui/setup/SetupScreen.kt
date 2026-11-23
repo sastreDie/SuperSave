@@ -10,51 +10,38 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.SelectableDates
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.diegodavid.supersave.R
 import com.diegodavid.supersave.data.ReviewChoice
 import com.diegodavid.supersave.data.Schedule
-import com.diegodavid.supersave.data.ScheduleType
-import com.diegodavid.supersave.ui.formatDate
+import com.diegodavid.supersave.ui.MoneyField
+import com.diegodavid.supersave.ui.RadioRow
+import com.diegodavid.supersave.ui.RecurringItemForm
+import com.diegodavid.supersave.ui.ScreenTitle
 import com.diegodavid.supersave.ui.formatMoney
-import com.diegodavid.supersave.ui.parseMoney
+import com.diegodavid.supersave.ui.scheduleSummary
 import java.time.DayOfWeek
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
 
 /**
  * First-run setup (D10 step 4): week start, balance, incomes, fixed payments, savings.
@@ -105,7 +92,7 @@ fun SetupScreen(modifier: Modifier = Modifier, vm: SetupViewModel = viewModel())
 
 @Composable
 private fun WelcomeStep(vm: SetupViewModel) {
-    StepTitle(R.string.setup_welcome_title, R.string.setup_welcome_body)
+    ScreenTitle(stringResource(R.string.setup_welcome_title), stringResource(R.string.setup_welcome_body))
     Text(stringResource(R.string.setup_week_start_question), style = MaterialTheme.typography.titleMedium)
     Column(Modifier.selectableGroup()) {
         RadioRow(stringResource(R.string.monday), vm.weekStart == DayOfWeek.MONDAY) { vm.weekStart = DayOfWeek.MONDAY }
@@ -117,7 +104,7 @@ private fun WelcomeStep(vm: SetupViewModel) {
 
 @Composable
 private fun BalanceStep(vm: SetupViewModel) {
-    StepTitle(R.string.setup_balance_title, R.string.setup_balance_body)
+    ScreenTitle(stringResource(R.string.setup_balance_title), stringResource(R.string.setup_balance_body))
     MoneyField(
         value = vm.balanceText,
         onValueChange = { vm.balanceText = it },
@@ -128,7 +115,7 @@ private fun BalanceStep(vm: SetupViewModel) {
 
 @Composable
 private fun IncomesStep(vm: SetupViewModel) {
-    StepTitle(R.string.setup_incomes_title, R.string.setup_incomes_body)
+    ScreenTitle(stringResource(R.string.setup_incomes_title), stringResource(R.string.setup_incomes_body))
     RecurringList(
         items = vm.incomes.map { Triple(it.name, it.amount, it.schedule) },
         emptyText = R.string.setup_incomes_empty,
@@ -140,7 +127,7 @@ private fun IncomesStep(vm: SetupViewModel) {
 
 @Composable
 private fun PaymentsStep(vm: SetupViewModel) {
-    StepTitle(R.string.setup_payments_title, R.string.setup_payments_body)
+    ScreenTitle(stringResource(R.string.setup_payments_title), stringResource(R.string.setup_payments_body))
     RecurringList(
         items = vm.payments.map { Triple(it.name, it.amount, it.schedule) },
         emptyText = R.string.setup_payments_empty,
@@ -152,7 +139,7 @@ private fun PaymentsStep(vm: SetupViewModel) {
 
 @Composable
 private fun SavingsStep(vm: SetupViewModel) {
-    StepTitle(R.string.setup_savings_title, R.string.setup_savings_body)
+    ScreenTitle(stringResource(R.string.setup_savings_title), stringResource(R.string.setup_savings_body))
     MoneyField(
         value = vm.goalText,
         onValueChange = { vm.goalText = it },
@@ -184,6 +171,8 @@ private fun RecurringList(
     onRemove: (Int) -> Unit,
 ) {
     var adding by rememberSaveable { mutableStateOf(false) }
+    // D28: anything due today is already in the balance the user typed, so count from tomorrow.
+    val tomorrow = remember { LocalDate.now().plusDays(1) }
 
     if (items.isEmpty() && !adding) {
         Text(stringResource(emptyText), style = MaterialTheme.typography.bodyMedium)
@@ -199,182 +188,11 @@ private fun RecurringList(
     }
     if (adding) {
         RecurringItemForm(
-            onAdd = { name, amount, schedule -> onAdd(name, amount, schedule); adding = false },
+            firstDate = tomorrow,
+            onSave = { name, amount, schedule -> onAdd(name, amount, schedule); adding = false },
             onCancel = { adding = false },
         )
     } else {
         OutlinedButton(onClick = { adding = true }) { Text(stringResource(addText)) }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun RecurringItemForm(onAdd: (String, Long, Schedule) -> Unit, onCancel: () -> Unit) {
-    val today = remember { LocalDate.now() }
-    var name by rememberSaveable { mutableStateOf("") }
-    var amountText by rememberSaveable { mutableStateOf("") }
-    var type by rememberSaveable { mutableStateOf(ScheduleType.BIWEEKLY) }
-    var everyNText by rememberSaveable { mutableStateOf("") }
-    var dayText by rememberSaveable { mutableStateOf("") }
-    var nextDate by rememberSaveable { mutableStateOf(today) }
-    var pickingDate by remember { mutableStateOf(false) }
-
-    val amount = parseMoney(amountText)?.takeIf { it > 0 }
-    val everyN = everyNText.toIntOrNull()?.takeIf { it >= 1 }
-    val day = dayText.toIntOrNull()?.takeIf { it in 1..31 }
-    // anchorDate = today: occurrences before today are already part of the balance
-    // the user typed, so they must not be counted again. EVERY_N_DAYS needs a real
-    // first date, so the user picks it.
-    val schedule: Schedule? = when (type) {
-        ScheduleType.EVERY_N_DAYS -> everyN?.let { Schedule(type, nextDate, everyNDays = it) }
-        ScheduleType.DAY_OF_MONTH -> day?.let { Schedule(type, today, dayOfMonth = it) }
-        else -> Schedule(type, today)
-    }
-    val valid = name.isNotBlank() && amount != null && schedule != null
-
-    Card(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text(stringResource(R.string.setup_name)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            MoneyField(
-                value = amountText,
-                onValueChange = { amountText = it },
-                label = stringResource(R.string.setup_amount),
-                isError = amountText.isNotBlank() && amount == null,
-            )
-
-            Text(stringResource(R.string.setup_how_often), style = MaterialTheme.typography.titleSmall)
-            Column(Modifier.selectableGroup()) {
-                ScheduleType.entries.forEach { t ->
-                    RadioRow(scheduleTypeLabel(t), type == t) { type = t }
-                }
-            }
-
-            when (type) {
-                ScheduleType.EVERY_N_DAYS -> {
-                    OutlinedTextField(
-                        value = everyNText,
-                        onValueChange = { everyNText = it.filter(Char::isDigit) },
-                        label = { Text(stringResource(R.string.setup_every_n_label)) },
-                        isError = everyNText.isNotBlank() && everyN == null,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
-                    )
-                    OutlinedButton(onClick = { pickingDate = true }) {
-                        Text(stringResource(R.string.setup_next_date, formatDate(nextDate)))
-                    }
-                }
-                ScheduleType.DAY_OF_MONTH -> OutlinedTextField(
-                    value = dayText,
-                    onValueChange = { dayText = it.filter(Char::isDigit) },
-                    label = { Text(stringResource(R.string.setup_day_of_month_label)) },
-                    isError = dayText.isNotBlank() && day == null,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                else -> {}
-            }
-
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onCancel) { Text(stringResource(android.R.string.cancel)) }
-                Button(onClick = { onAdd(name.trim(), amount!!, schedule!!) }, enabled = valid) {
-                    Text(stringResource(R.string.setup_add))
-                }
-            }
-        }
-    }
-
-    if (pickingDate) {
-        // The date picker works in UTC milliseconds; convert to and from LocalDate.
-        val todayMillis = today.toUtcMillis()
-        val state = rememberDatePickerState(
-            initialSelectedDateMillis = nextDate.toUtcMillis(),
-            selectableDates = object : SelectableDates {
-                override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis >= todayMillis
-            },
-        )
-        DatePickerDialog(
-            onDismissRequest = { pickingDate = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    state.selectedDateMillis?.let {
-                        nextDate = Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate()
-                    }
-                    pickingDate = false
-                }) { Text(stringResource(android.R.string.ok)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { pickingDate = false }) { Text(stringResource(android.R.string.cancel)) }
-            },
-        ) { DatePicker(state) }
-    }
-}
-
-private fun LocalDate.toUtcMillis(): Long = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-
-@Composable
-private fun scheduleTypeLabel(type: ScheduleType): String = stringResource(
-    when (type) {
-        ScheduleType.END_OF_MONTH -> R.string.schedule_end_of_month
-        ScheduleType.START_OF_MONTH -> R.string.schedule_start_of_month
-        ScheduleType.BIWEEKLY -> R.string.schedule_biweekly
-        ScheduleType.EVERY_N_DAYS -> R.string.schedule_every_n_days
-        ScheduleType.DAY_OF_MONTH -> R.string.schedule_day_of_month
-    }
-)
-
-/** "Quincena (15th and end of month)", "Every 14 days, next on Nov 28, 2026", "On the 10th". */
-@Composable
-private fun scheduleSummary(schedule: Schedule): String = when (schedule.type) {
-    ScheduleType.EVERY_N_DAYS -> {
-        val n = schedule.everyNDays ?: 0
-        pluralStringResource(R.plurals.schedule_every_n_summary, n, n, formatDate(schedule.anchorDate))
-    }
-    ScheduleType.DAY_OF_MONTH -> stringResource(R.string.schedule_day_of_month_summary, schedule.dayOfMonth ?: 0)
-    else -> scheduleTypeLabel(schedule.type)
-}
-
-// ---------- Small shared pieces ----------
-
-@Composable
-private fun StepTitle(title: Int, body: Int) {
-    Text(stringResource(title), style = MaterialTheme.typography.headlineSmall)
-    Text(stringResource(body), style = MaterialTheme.typography.bodyMedium)
-}
-
-@Composable
-private fun MoneyField(value: String, onValueChange: (String) -> Unit, label: String, isError: Boolean) {
-    OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        label = { Text(label) },
-        prefix = { Text("$") },
-        isError = isError,
-        supportingText = if (isError) ({ Text(stringResource(R.string.setup_money_error)) }) else null,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-        singleLine = true,
-        modifier = Modifier.fillMaxWidth(),
-    )
-}
-
-/** A radio button with its label; the whole row is tappable. */
-@Composable
-private fun RadioRow(label: String, selected: Boolean, onSelect: () -> Unit) {
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .selectable(selected = selected, onClick = onSelect, role = Role.RadioButton)
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        RadioButton(selected = selected, onClick = null)
-        Text(label, Modifier.padding(start = 8.dp))
     }
 }

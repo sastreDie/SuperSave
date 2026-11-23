@@ -176,9 +176,34 @@ start, so opening the app on Wednesday gives the same budget as on Monday.
 Because of D27, a balance dated today wouldn't count until the next segment, so
 setting up on a Wednesday would give a ₱0 week. Setup instead dates the starting
 balance the day **before** the current segment starts, so this week freezes with
-it. Incomes and payments added during setup start counting **from today**
-(`anchorDate` = today): earlier ones are already part of the balance you typed.
-A payment due today is still treated as upcoming, which is the cautious choice (D19).
+it. Incomes and payments added during setup start counting **from tomorrow**
+(`anchorDate` = tomorrow): anything due today or earlier is assumed to be already
+part of the balance you typed, so it's never counted twice. Incomes and payments
+added later in Settings count from **today**, because the app's balance doesn't
+include them yet.
+
+### D29. Weigh the payment (Claude, to confirm; D11 lists it as Diego's logic)
+Before paying for something, the user types the amount and sees, live:
+- **It fits:** how much would be left this week.
+- **It doesn't fit:** how much over, and how much lower each later week of the
+  month gets (the overspend spread over the days left, D5). In the last week of
+  the month, the overspend comes out of this month's savings.
+- **It would use savings:** if the payment is more than the free money for the
+  rest of the month, how much of the savings goal it uses (D25).
+
+Nothing is saved until **Register payment**, which records it as an expense.
+The payment is **never rounded**: it's taken to the exact cent. The only
+division is the "each week gets about … less" estimate, which rounds **down**
+like every other division in the app (D26, Diego). Messages are informative,
+never scolding (D6).
+
+### D30. Fixed payments and incomes are recorded when the app calculates (Claude, to confirm)
+Instead of a WorkManager job, every time the app or the widget calculates, each
+fixed payment and recurring income that came due up to today and has no ledger
+row yet gets one, dated its due day (D15). Nothing is missed if the phone was off,
+and nothing is written twice. Cancelling a payment or ending an income stops it
+from that day on. Editing one restarts its schedule from today. The real amount
+can still differ (e.g. a smaller paycheck); Correct my balance fixes that (D14).
 
 ---
 

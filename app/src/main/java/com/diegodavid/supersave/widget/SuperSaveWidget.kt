@@ -29,8 +29,7 @@ class SuperSaveWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         // Phase 1: load
-        val db = SuperSaveDatabase.get(context)
-        val repository = BudgetRepository(db)
+        val repository = BudgetRepository(SuperSaveDatabase.get(context))
         val firstSummary = repository.currentWeek(LocalDate.now())
 
         // Phase 2: layout
@@ -41,9 +40,7 @@ class SuperSaveWidget : GlanceAppWidget() {
             // firstSummary, then loads fresh numbers every time a table changes.
             // (Fix by Claude: the widget used to keep showing the old number.)
             val summary by produceState<WeekSummary?>(firstSummary) {
-                db.invalidationTracker
-                    .createFlow("ledger", "settings", "fixed_payments", "recurring_incomes")
-                    .collect { value = repository.currentWeek(LocalDate.now()) }
+                repository.observeWeek().collect { value = it }
             }
 
             GlanceTheme {

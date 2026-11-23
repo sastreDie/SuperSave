@@ -2,15 +2,8 @@
     <!-- D22: every string here must also exist in values-es/strings.xml -->
     <string name="app_name" translatable="false">SuperSave</string>
 
-    <!-- Debug screen (temporary, until the real screens exist) -->
-    <string name="debug_title">Debug: this week</string>
-    <string name="debug_not_set_up">No data yet. Tap \"Load test data\".</string>
-    <string name="debug_week">Week: %1$s to %2$s</string>
-    <string name="debug_week_budget">Week budget: %1$s</string>
-    <string name="debug_spent">Spent: %1$s</string>
-    <string name="debug_last_week">Last week\'s budget: %1$s</string>
+    <!-- Debug tools (temporary) -->
     <string name="debug_load">Load test data</string>
-    <string name="debug_add_expense">Add $100 expense today</string>
     <string name="debug_clear">Clear all data</string>
 
     <!-- Setup flow -->
@@ -69,6 +62,51 @@
         <item quantity="one">Every day, starting %2$s</item>
         <item quantity="other">Every %1$d days, next on %2$s</item>
     </plurals>
+
+    <!-- Home -->
+    <string name="home_week">%1$s – %2$s</string>
+    <string name="home_budget_spent">Budget %1$s · spent %2$s</string>
+    <string name="weigh_button">Weigh a payment</string>
+    <string name="correct_button">Correct my balance (%1$s)</string>
+    <string name="home_expenses_title">This week\'s expenses</string>
+    <string name="home_expenses_empty">Nothing spent this week yet.</string>
+    <string name="home_expense_no_note">Expense</string>
+    <string name="home_delete_title">Remove this expense?</string>
+    <string name="home_delete_body">The %1$s goes back into this week\'s budget.</string>
+
+    <!-- Weigh the payment (D29) -->
+    <string name="weigh_title">Weigh a payment</string>
+    <string name="weigh_body">Type what it costs to see how it fits your budget before you pay.</string>
+    <string name="weigh_amount">How much is it?</string>
+    <string name="weigh_note">What is it? (optional)</string>
+    <string name="weigh_skip">Not now</string>
+    <string name="weigh_register">Register payment</string>
+    <string name="weigh_fits">It fits! You\'d still have %1$s left this week.</string>
+    <string name="weigh_over">That\'s %1$s more than you have left this week.</string>
+    <string name="weigh_spread">The extra is spread over the rest of the month: each week gets about %1$s less.</string>
+    <string name="weigh_last_week">This is the last week of the month, so the extra comes out of this month\'s savings.</string>
+    <string name="weigh_savings_dip">It would use %1$s of your savings goal.</string>
+
+    <!-- Correct my balance (D14, D18) -->
+    <string name="correct_title">Correct my balance</string>
+    <string name="correct_body">Open your bank app and type the balance you see. The difference counts right away, this week included.</string>
+    <string name="correct_tracked">SuperSave thinks you have %1$s</string>
+    <string name="correct_label">Real balance</string>
+    <string name="correct_more">That\'s %1$s more than SuperSave had.</string>
+    <string name="correct_less">That\'s %1$s less than SuperSave had.</string>
+    <string name="correct_same">That\'s exactly what SuperSave has.</string>
+    <string name="correct_save">Save</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_next_week_note">This week\'s budget is already set, so changes here count from the next week.</string>
+    <string name="settings_save_goal">Save goal</string>
+    <string name="settings_save">Save</string>
+    <string name="settings_edit">Edit</string>
+    <string name="settings_stop">Stop</string>
+    <string name="settings_stop_title">Stop %1$s?</string>
+    <string name="settings_stop_income_body">SuperSave won\'t expect this money anymore. What you already received stays in your history.</string>
+    <string name="settings_stop_payment_body">SuperSave won\'t set money aside for it anymore. Past payments stay in your history.</string>
 
     <!-- Widget picker -->
     <string name="widget_description">How much you have left this week</string>

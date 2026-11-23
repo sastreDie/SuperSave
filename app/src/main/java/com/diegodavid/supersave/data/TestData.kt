@@ -11,7 +11,8 @@ import java.time.LocalDate
  */
 object TestData {
     private fun d(m: Int, day: Int) = LocalDate.of(2026, m, day)
-    private val longAgo = d(1, 1)
+    // Schedules start on Nov 1: the repository records every occurrence since the anchor (D30).
+    private val novFirst = d(11, 1)
 
     /** Wipes every table. Blocking call, so it runs on a background (IO) thread. */
     suspend fun clear(db: SuperSaveDatabase) = withContext(Dispatchers.IO) { db.clearAllTables() }
@@ -25,17 +26,18 @@ object TestData {
         db.settings().save(Settings(monthlySavingsGoal = 200_000L))   // $2,000 goal, Monday weeks
 
         val rent = db.fixedPayments().insert(FixedPayment(name = "Rent", amount = 300_000L,
-            schedule = Schedule(ScheduleType.START_OF_MONTH, longAgo)))
+            schedule = Schedule(ScheduleType.START_OF_MONTH, novFirst)))
         val claude = db.fixedPayments().insert(FixedPayment(name = "Claude", amount = 39_900L,
-            schedule = Schedule(ScheduleType.DAY_OF_MONTH, longAgo, dayOfMonth = 10)))
+            schedule = Schedule(ScheduleType.DAY_OF_MONTH, novFirst, dayOfMonth = 10)))
         db.fixedPayments().insert(FixedPayment(name = "Internet", amount = 50_000L,
-            schedule = Schedule(ScheduleType.DAY_OF_MONTH, longAgo, dayOfMonth = 28)))
+            schedule = Schedule(ScheduleType.DAY_OF_MONTH, novFirst, dayOfMonth = 28)))
         val salary = db.recurringIncomes().insert(RecurringIncome(name = "Salary", amount = 600_000L,
-            schedule = Schedule(ScheduleType.BIWEEKLY, longAgo)))
+            schedule = Schedule(ScheduleType.BIWEEKLY, novFirst)))
 
         db.ledger().insertAll(listOf(
             LedgerEntry(date = d(10, 31), amount = 500_000L, type = EntryType.BALANCE_CORRECTION, note = "Starting balance"),
-            // The auto-deductions WorkManager will make later (D15), written by hand for now.
+            // Already-due payments and income. The repository would add these by itself (D30);
+            // written here so the data is easy to read.
             LedgerEntry(date = d(11, 1), amount = -300_000L, type = EntryType.FIXED_PAYMENT, paymentId = rent),
             LedgerEntry(date = d(11, 10), amount = -39_900L, type = EntryType.FIXED_PAYMENT, paymentId = claude),
             LedgerEntry(date = d(11, 15), amount = 600_000L, type = EntryType.INCOME, incomeId = salary),
