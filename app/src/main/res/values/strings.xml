@@ -70,17 +70,24 @@
     <string name="home_week">%1$s – %2$s</string>
     <string name="home_budget_spent">Budget %1$s · spent %2$s</string>
     <string name="expense_button">Check &amp; record an expense</string>
-    <string name="surprise_button">Surprise money</string>
+    <string name="extra_button">Extra money</string>
     <string name="stat_week_short">This week</string>
     <string name="stat_month">Left this month</string>
     <string name="stat_balance">Balance</string>
     <string name="stat_saved">Saved</string>
     <string name="home_goal_note">This month\'s savings goal of %1$s is already set aside.</string>
-    <string name="home_expenses_title">This week\'s expenses</string>
-    <string name="home_expenses_empty">Nothing spent this week yet.</string>
-    <string name="home_expense_no_note">Expense</string>
-    <string name="home_delete_title">Remove this expense?</string>
-    <string name="home_delete_body">The %1$s goes back into this week\'s budget.</string>
+    <string name="activity_title">Activity</string>
+    <string name="activity_empty">Nothing in the last month yet.</string>
+    <string name="activity_show_older">Show older</string>
+    <string name="activity_expense">Expense</string>
+    <string name="activity_extra">Extra money</string>
+    <string name="activity_extra_saved">Extra money · saved</string>
+    <string name="activity_income">Income</string>
+    <string name="activity_payment">Fixed payment</string>
+    <string name="activity_correction">Balance correction</string>
+    <string name="activity_to_savings">Moved to savings</string>
+    <string name="activity_note">Note</string>
+    <string name="activity_recurring_hint">This only changes this one time. To change it every time, edit it in Settings. If it didn\'t happen, set it to 0.</string>
 
     <!-- Weigh the payment (D29) -->
     <string name="weigh_title">Check &amp; record an expense</string>
@@ -117,6 +124,21 @@
     <string name="settings_stop_income_body">SuperSave won\'t expect this money anymore. What you already received stays in your history.</string>
     <string name="settings_stop_payment_body">SuperSave won\'t set money aside for it anymore. Past payments stay in your history.</string>
 
+    <string name="review_card">%1$s is over. See how it went</string>
+    <string name="review_title">How %1$s went</string>
+    <string name="review_you_saved">You saved</string>
+    <string name="review_goal_line">Savings goal: %1$s of %2$s</string>
+    <string name="review_goal_met">You met your savings goal!</string>
+    <string name="review_short">You were %1$s short of your goal. That\'s okay: a new month is a fresh start.</string>
+    <string name="review_leftover">You had %1$s left over</string>
+    <string name="review_spend_now">Spend it: it\'s added to this month\'s money</string>
+    <string name="review_done">Done</string>
+    <string name="home_short">Right now you\'re %1$s short for this month. Spending a little less will close the gap.</string>
+    <string name="weigh_date_today">Date: today</string>
+    <string name="weigh_date">Date: %1$s</string>
+    <string name="weigh_past_week">That day is in an earlier week, so this week\'s money doesn\'t change. It comes out of what\'s left this month.</string>
+    <string name="activity_from_savings">Taken out of savings</string>
+
     <!-- Widget picker -->
     <string name="widget_label">SuperSave summary</string>
     <string name="widget_description">This week, this month, your balance and savings</string>
@@ -125,17 +147,17 @@
     <string name="quick_widget_action">+ Record expense</string>
     <string name="quick_widget_left">%1$s left this week</string>
 
-    <!-- Surprise money (D31) -->
-    <string name="surprise_title">Surprise money</string>
-    <string name="surprise_body">Money that came in outside your usual schedule: a gift, a side job, a refund.</string>
-    <string name="surprise_amount">How much?</string>
-    <string name="surprise_note">Where is it from? (optional)</string>
-    <string name="surprise_question">What do you want to do with it?</string>
-    <string name="surprise_save">Save it</string>
-    <string name="surprise_spend">Spend it</string>
-    <string name="surprise_save_note">It goes straight to your savings. Your budget stays the same.</string>
-    <string name="surprise_spend_note">It\'s added to this month\'s money and shows up in your weekly budget starting next week.</string>
-    <string name="surprise_add">Add</string>
+    <!-- Extra money (D31) -->
+    <string name="extra_title">Extra money</string>
+    <string name="extra_body">Money that came in outside your usual schedule: a gift, a side job, a refund.</string>
+    <string name="extra_amount">How much?</string>
+    <string name="extra_note">Where is it from? (optional)</string>
+    <string name="extra_question">What do you want to do with it?</string>
+    <string name="extra_save">Save it</string>
+    <string name="extra_spend">Spend it</string>
+    <string name="extra_save_note">It goes straight to your savings. Your budget stays the same.</string>
+    <string name="extra_spend_note">It\'s added to this month\'s money and shows up in your weekly budget starting next week.</string>
+    <string name="extra_add">Add</string>
     <string name="widget_no_data">Open SuperSave to set up</string>
 
     <!-- Shared by the app and the widget -->

@@ -35,6 +35,10 @@ object AppClock {
     /** null = go back to the real date. */
     fun setPretend(date: LocalDate?) {
         _pretend.value = date
-        prefs?.edit()?.apply { if (date == null) remove(KEY) else putString(KEY, date.toString()) }?.apply()
+        // commit(), not apply(): written to disk right away, so a reinstall or a killed
+        // process can't bring back an older pretend date.
+        val editor = prefs?.edit() ?: return
+        if (date == null) editor.remove(KEY) else editor.putString(KEY, date.toString())
+        editor.commit()
     }
 }

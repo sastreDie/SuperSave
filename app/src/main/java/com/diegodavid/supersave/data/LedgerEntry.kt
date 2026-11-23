@@ -24,5 +24,8 @@ data class LedgerEntry(
     val note: String? = null,
     // Set when a RecurringIncome / FixedPayment created this entry automatically.
     val incomeId: Long? = null,
-    val paymentId: Long? = null
+    val paymentId: Long? = null,
+    // Database v2: a SAVINGS_TRANSFER that belongs to another row, e.g. the "save it"
+    // half of extra money (D31). Editing or removing that row changes this one too.
+    val linkedEntryId: Long? = null,
 )

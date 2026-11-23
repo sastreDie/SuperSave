@@ -27,6 +27,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SelectableDates
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.runtime.remember
+import com.diegodavid.supersave.AppClock
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneOffset
 import com.diegodavid.supersave.R
 import com.diegodavid.supersave.engine.Weighing
 
@@ -42,6 +53,11 @@ fun WeighScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modi
     var note by rememberSaveable { mutableStateOf("") }
     val amount = parseMoney(amountText)?.takeIf { it > 0 }
     val home by vm.home.collectAsStateWithLifecycle()
+    // D35: today by default; any earlier day of this month can be picked.
+    val today = remember { AppClock.today() }
+    var date by rememberSaveable { mutableStateOf(today) }
+    // An expense in an earlier week doesn't touch this week's money, only the month's.
+    val pastWeek = home?.let { date < it.week.week.start } ?: false
 
     // Recalculated every time the amount changes. Reads the database, so it runs in a coroutine.
     val weighing by produceState<Weighing?>(null, amount) {
@@ -59,7 +75,7 @@ fun WeighScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modi
             home?.let { h ->
                 val cost = amount ?: 0L
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatTile(stringResource(R.string.stat_week_short), h.week.left - cost, Modifier.weight(1f), small = true)
+                    StatTile(stringResource(R.string.stat_week_short), h.week.left - if (pastWeek) 0 else cost, Modifier.weight(1f), small = true)
                     StatTile(stringResource(R.string.stat_month), h.leftThisMonth - cost, Modifier.weight(1f), small = true)
                     StatTile(stringResource(R.string.stat_balance), h.balance - cost, Modifier.weight(1f), small = true)
                 }
@@ -81,14 +97,20 @@ fun WeighScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modi
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            weighing?.takeIf { it.amount == amount }?.let { WeighingCard(it) }
+            ExpenseDateButton(date, today, onPick = { date = it })
+            if (pastWeek) {
+                // The weighing compares with this week, so for an earlier week it would mislead.
+                Text(stringResource(R.string.weigh_past_week), style = MaterialTheme.typography.bodyMedium)
+            } else {
+                weighing?.takeIf { it.amount == amount }?.let { WeighingCard(it) }
+            }
         }
 
         Row(Modifier.fillMaxWidth().padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = onDone) { Text(stringResource(R.string.weigh_skip)) }
             Spacer(Modifier.weight(1f))
             Button(
-                onClick = { vm.addExpense(amount!!, note.trim().ifBlank { null }); onDone() },
+                onClick = { vm.addExpense(amount!!, note.trim().ifBlank { null }, date); onDone() },
                 enabled = amount != null,
             ) { Text(stringResource(R.string.weigh_register)) }
         }
@@ -119,4 +141,42 @@ private fun WeighingCard(w: Weighing) {
             }
         }
     }
+}
+
+/**
+ * "Date: Today" button with a date picker (D35). Only days of this month up to today:
+ * earlier months are closed and their savings already moved (D33).
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ExpenseDateButton(date: LocalDate, today: LocalDate, onPick: (LocalDate) -> Unit) {
+    var picking by remember { mutableStateOf(false) }
+    OutlinedButton(onClick = { picking = true }) {
+        Text(
+            if (date == today) stringResource(R.string.weigh_date_today)
+            else stringResource(R.string.weigh_date, formatDate(date))
+        )
+    }
+    if (!picking) return
+
+    fun LocalDate.millis() = atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+    val first = today.withDayOfMonth(1).millis()
+    val last = today.millis()
+    val state = rememberDatePickerState(
+        initialSelectedDateMillis = date.millis(),
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long) = utcTimeMillis in first..last
+            override fun isSelectableYear(year: Int) = year == today.year
+        },
+    )
+    DatePickerDialog(
+        onDismissRequest = { picking = false },
+        confirmButton = {
+            TextButton(onClick = {
+                state.selectedDateMillis?.let { onPick(Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC).toLocalDate()) }
+                picking = false
+            }) { Text(stringResource(android.R.string.ok)) }
+        },
+        dismissButton = { TextButton(onClick = { picking = false }) { Text(stringResource(android.R.string.cancel)) } },
+    ) { DatePicker(state) }
 }

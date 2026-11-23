@@ -66,17 +66,24 @@
     <string name="home_week">%1$s – %2$s</string>
     <string name="home_budget_spent">Presupuesto %1$s · gastado %2$s</string>
     <string name="expense_button">Revisar y registrar un gasto</string>
-    <string name="surprise_button">Dinero extra</string>
+    <string name="extra_button">Dinero extra</string>
     <string name="stat_week_short">Esta semana</string>
     <string name="stat_month">Queda este mes</string>
     <string name="stat_balance">Saldo</string>
     <string name="stat_saved">Ahorrado</string>
     <string name="home_goal_note">Tu meta de ahorro de este mes (%1$s) ya está apartada.</string>
-    <string name="home_expenses_title">Gastos de esta semana</string>
-    <string name="home_expenses_empty">Aún no has gastado nada esta semana.</string>
-    <string name="home_expense_no_note">Gasto</string>
-    <string name="home_delete_title">¿Quitar este gasto?</string>
-    <string name="home_delete_body">Los %1$s regresan al presupuesto de esta semana.</string>
+    <string name="activity_title">Actividad</string>
+    <string name="activity_empty">Aún no hay nada en el último mes.</string>
+    <string name="activity_show_older">Ver anteriores</string>
+    <string name="activity_expense">Gasto</string>
+    <string name="activity_extra">Dinero extra</string>
+    <string name="activity_extra_saved">Dinero extra · ahorrado</string>
+    <string name="activity_income">Ingreso</string>
+    <string name="activity_payment">Pago fijo</string>
+    <string name="activity_correction">Corrección de saldo</string>
+    <string name="activity_to_savings">Pasado a ahorros</string>
+    <string name="activity_note">Nota</string>
+    <string name="activity_recurring_hint">Esto solo cambia esta vez. Para cambiarlo siempre, edítalo en Ajustes. Si no pasó, ponlo en 0.</string>
 
     <string name="weigh_title">Revisar y registrar un gasto</string>
     <string name="weigh_after_note">Después de pagarlo.</string>
@@ -110,6 +117,21 @@
     <string name="settings_stop_income_body">SuperSave ya no esperará este dinero. Lo que ya recibiste se queda en tu historial.</string>
     <string name="settings_stop_payment_body">SuperSave ya no apartará dinero para este pago. Los pagos anteriores se quedan en tu historial.</string>
 
+    <string name="review_card">%1$s terminó. Mira cómo te fue</string>
+    <string name="review_title">Cómo te fue en %1$s</string>
+    <string name="review_you_saved">Ahorraste</string>
+    <string name="review_goal_line">Meta de ahorro: %1$s de %2$s</string>
+    <string name="review_goal_met">¡Cumpliste tu meta de ahorro!</string>
+    <string name="review_short">Te faltaron %1$s para tu meta. Está bien: un mes nuevo es un nuevo comienzo.</string>
+    <string name="review_leftover">Te sobraron %1$s</string>
+    <string name="review_spend_now">Gastarlo: se suma al dinero de este mes</string>
+    <string name="review_done">Listo</string>
+    <string name="home_short">Ahorita te faltan %1$s para este mes. Gastar un poco menos ayuda a cerrar la diferencia.</string>
+    <string name="weigh_date_today">Fecha: hoy</string>
+    <string name="weigh_date">Fecha: %1$s</string>
+    <string name="weigh_past_week">Ese día es de una semana anterior, así que el dinero de esta semana no cambia. Sale de lo que queda este mes.</string>
+    <string name="activity_from_savings">Sacado de ahorros</string>
+
     <string name="widget_label">Resumen de SuperSave</string>
     <string name="widget_description">Esta semana, este mes, tu saldo y tus ahorros</string>
     <string name="quick_widget_label">Gasto rápido</string>
@@ -117,16 +139,16 @@
     <string name="quick_widget_action">+ Registrar gasto</string>
     <string name="quick_widget_left">Te quedan %1$s esta semana</string>
 
-    <string name="surprise_title">Dinero extra</string>
-    <string name="surprise_body">Dinero que llegó fuera de tus fechas de siempre: un regalo, un trabajo extra, un reembolso.</string>
-    <string name="surprise_amount">¿Cuánto?</string>
-    <string name="surprise_note">¿De dónde viene? (opcional)</string>
-    <string name="surprise_question">¿Qué quieres hacer con él?</string>
-    <string name="surprise_save">Ahorrarlo</string>
-    <string name="surprise_spend">Gastarlo</string>
-    <string name="surprise_save_note">Se va directo a tus ahorros. Tu presupuesto no cambia.</string>
-    <string name="surprise_spend_note">Se suma al dinero de este mes y aparece en tu presupuesto semanal a partir de la próxima semana.</string>
-    <string name="surprise_add">Agregar</string>
+    <string name="extra_title">Dinero extra</string>
+    <string name="extra_body">Dinero que llegó fuera de tus fechas de siempre: un regalo, un trabajo extra, un reembolso.</string>
+    <string name="extra_amount">¿Cuánto?</string>
+    <string name="extra_note">¿De dónde viene? (opcional)</string>
+    <string name="extra_question">¿Qué quieres hacer con él?</string>
+    <string name="extra_save">Ahorrarlo</string>
+    <string name="extra_spend">Gastarlo</string>
+    <string name="extra_save_note">Se va directo a tus ahorros. Tu presupuesto no cambia.</string>
+    <string name="extra_spend_note">Se suma al dinero de este mes y aparece en tu presupuesto semanal a partir de la próxima semana.</string>
+    <string name="extra_add">Agregar</string>
     <string name="widget_no_data">Abre SuperSave para configurarlo</string>
 
     <string name="left_this_week">Te queda esta semana</string>

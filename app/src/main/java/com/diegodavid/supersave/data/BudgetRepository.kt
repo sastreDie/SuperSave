@@ -41,8 +41,6 @@ data class SetupData(
 /** Everything the home screen and the summary widget show (D32). Amounts in cents. */
 data class HomeData(
     val week: WeekSummary,
-    /** This week's expenses, newest first. */
-    val expenses: List<LedgerEntry>,
     /** What SuperSave thinks is in the account today (D14). */
     val balance: Long,
     /**
@@ -54,7 +52,30 @@ data class HomeData(
     val saved: Long,
     /** This month's savings goal, already set aside from leftThisMonth. */
     val goal: Long,
+    /** A closed month waiting for the user's review (D9), or null. */
+    val pendingReview: MonthReview?,
 )
+
+/** What kind of row an activity log line is, which decides its label and what can be changed. */
+enum class ActivityKind { EXPENSE, EXTRA_MONEY, INCOME, FIXED_PAYMENT, CORRECTION, TO_SAVINGS }
+
+/** One line of the activity log on home. */
+data class ActivityItem(
+    val entry: LedgerEntry,
+    val kind: ActivityKind,
+    /** The recurring income or fixed payment's name, e.g. "Salary". */
+    val name: String?,
+    /** Extra money that went to savings (D31). */
+    val saved: Boolean,
+) {
+    /** Expenses, extra money, incomes and payments can be adjusted (D34). */
+    val editable: Boolean get() = kind in setOf(ActivityKind.EXPENSE, ActivityKind.EXTRA_MONEY, ActivityKind.INCOME, ActivityKind.FIXED_PAYMENT)
+    /**
+     * Only rows the user typed can be removed. A recurring income or payment would be
+     * recorded again (D30), so it's set to $0 instead.
+     */
+    val removable: Boolean get() = kind == ActivityKind.EXPENSE || kind == ActivityKind.EXTRA_MONEY
+}
 
 /**
  * The one place the app and the widget ask "how is this week going?".
@@ -78,6 +99,29 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
 
     fun observeHome(): Flow<HomeData?> = whenDataChanges { home(it) }
 
+    /** The activity log: everything from the last [days] days, newest first (D34). */
+    fun observeActivity(days: Long): Flow<List<ActivityItem>> = whenDataChanges { activity(it, days) }
+
+    suspend fun activity(today: LocalDate, days: Long): List<ActivityItem> = db.withTransaction {
+        // Make sure today's payments and incomes are recorded before listing them.
+        currentWeek(today)
+        val start = today.minusDays(days - 1)
+        val incomeNames = db.recurringIncomes().all().associate { it.id to it.name }
+        val paymentNames = db.fixedPayments().all().associate { it.id to it.name }
+        val saved = db.ledger().savedLinksBetween(start, today).toSet()
+        db.ledger().activityBetween(start, today).map { e ->
+            val kind = when (e.type) {
+                EntryType.EXPENSE -> ActivityKind.EXPENSE
+                EntryType.INCOME -> if (e.incomeId == null) ActivityKind.EXTRA_MONEY else ActivityKind.INCOME
+                EntryType.FIXED_PAYMENT -> ActivityKind.FIXED_PAYMENT
+                EntryType.BALANCE_CORRECTION -> ActivityKind.CORRECTION
+                EntryType.SAVINGS_TRANSFER -> ActivityKind.TO_SAVINGS
+            }
+            val name = e.incomeId?.let(incomeNames::get) ?: e.paymentId?.let(paymentNames::get)
+            ActivityItem(e, kind, name, saved = e.id in saved)
+        }
+    }
+
     fun observeSettings(): Flow<Settings?> = db.settings().observe()
     fun observeIncomes(): Flow<List<RecurringIncome>> = db.recurringIncomes().observeActive()
     fun observePayments(): Flow<List<FixedPayment>> = db.fixedPayments().observeActive()
@@ -87,11 +131,11 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
         val week = currentWeek(today) ?: return@withTransaction null
         HomeData(
             week = week,
-            expenses = db.ledger().expensesBetween(week.week.start, week.week.end),
             balance = balanceOn(today),
             leftThisMonth = freeMoneyNow(today, settings),
             saved = savedOn(today),
             goal = settings.monthlySavingsGoal,
+            pendingReview = db.monthReviews().latestUnreviewed(),
         )
     }
 
@@ -209,7 +253,13 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
         val toSavings = monthCloseTransfer(settings.monthlySavingsGoal, leftover, keep)
 
         db.monthReviews().insert(
-            MonthReview(month, savingsGoal = settings.monthlySavingsGoal, surplus = leftover.coerceAtLeast(0))
+            MonthReview(
+                month,
+                savingsGoal = settings.monthlySavingsGoal,
+                surplus = leftover,
+                // The default was applied; the review screen can change it (D21).
+                choice = if (keep) ReviewChoice.KEEP else ReviewChoice.SPEND,
+            )
         )
         if (toSavings > 0) {
             db.ledger().insert(LedgerEntry(date = lastDay, amount = toSavings, type = EntryType.SAVINGS_TRANSFER))
@@ -287,19 +337,44 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
         db.ledger().insert(LedgerEntry(date = date, amount = -amount, type = EntryType.EXPENSE, note = note))
     }
 
-    suspend fun deleteExpense(id: Long) = db.ledger().deleteExpense(id)
+    /**
+     * Adjusts a row from the activity log (D34). [amount] is positive; the sign comes
+     * from the row's type. Extra money that was saved changes its savings half too.
+     * Changing a recurring income or payment only changes that one time; the next
+     * ones use the amount in Settings.
+     */
+    suspend fun updateEntry(id: Long, amount: Long, note: String?) = db.withTransaction {
+        val e = db.ledger().get(id) ?: return@withTransaction
+        val signed = when (e.type) {
+            EntryType.EXPENSE, EntryType.FIXED_PAYMENT -> -amount
+            EntryType.INCOME -> amount
+            else -> return@withTransaction   // corrections and savings moves stay as they are
+        }
+        db.ledger().update(e.copy(amount = signed, note = note))
+        db.ledger().updateLinkedAmount(id, amount)
+    }
+
+    /** Removes an expense or extra money (and its savings half). Other rows can't be removed. */
+    suspend fun removeEntry(id: Long) = db.withTransaction {
+        val e = db.ledger().get(id) ?: return@withTransaction
+        val typedByUser = e.type == EntryType.EXPENSE || (e.type == EntryType.INCOME && e.incomeId == null)
+        if (typedByUser) db.ledger().deleteWithLinked(id)
+    }
 
     /**
-     * Surprise money (D7, D31): a one-off INCOME row with no incomeId.
+     * Extra money (D7, D31): a one-off INCOME row with no incomeId.
      * [save] = true: the same amount also goes into the savings bucket (D24), so it's
      * in the balance but not in spendable money, and the budget doesn't change.
      * [save] = false: it becomes spendable money. Like any income it counts from the
      * next segment (D4), spread over the rest of the month.
      */
-    suspend fun addSurpriseMoney(amount: Long, note: String?, save: Boolean, today: LocalDate) = db.withTransaction {
-        db.ledger().insert(LedgerEntry(date = today, amount = amount, type = EntryType.INCOME, note = note))
+    suspend fun addExtraMoney(amount: Long, note: String?, save: Boolean, today: LocalDate) = db.withTransaction {
+        val incomeId = db.ledger().insert(LedgerEntry(date = today, amount = amount, type = EntryType.INCOME, note = note))
         if (save) {
-            db.ledger().insert(LedgerEntry(date = today, amount = amount, type = EntryType.SAVINGS_TRANSFER, note = note))
+            // Linked, so editing or removing the extra money changes its savings half too (D34).
+            db.ledger().insert(
+                LedgerEntry(date = today, amount = amount, type = EntryType.SAVINGS_TRANSFER, note = note, linkedEntryId = incomeId)
+            )
         }
     }
 
@@ -321,6 +396,34 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
             segment.start,
             correctionForSegment(difference, daysLeftInSegment, daysLeftInMonth(today)),
         )
+    }
+
+    /**
+     * The month review (D9, D21). [keep] is the user's choice for the surplus. If it
+     * differs from what the automatic close did, the surplus moves into or out of
+     * savings today, and like a correction (D18) the current week feels it right away.
+     * Older months that were never reviewed keep their automatic choice.
+     */
+    suspend fun reviewMonth(month: YearMonth, keep: Boolean, today: LocalDate) = db.withTransaction {
+        val settings = db.settings().get() ?: return@withTransaction
+        val review = db.monthReviews().get(month) ?: return@withTransaction
+        val surplus = review.surplus.coerceAtLeast(0)
+        if (keep != review.kept && surplus > 0) {
+            currentWeek(today)   // freeze today's segment first, as in correctBalance
+            // Positive = into savings (Keep it now), negative = back out (Spend it now).
+            val toSavings = if (keep) surplus else -surplus
+            db.ledger().insert(LedgerEntry(date = today, amount = toSavings, type = EntryType.SAVINGS_TRANSFER))
+            val segment = segmentOf(today, settings)
+            val daysLeftInSegment = ChronoUnit.DAYS.between(today, segment.end).toInt() + 1
+            db.segments().addToBudget(
+                segment.start,
+                correctionForSegment(-toSavings, daysLeftInSegment, daysLeftInMonth(today)),
+            )
+        }
+        db.monthReviews().update(
+            review.copy(choice = if (keep) ReviewChoice.KEEP else ReviewChoice.SPEND, reviewed = true)
+        )
+        db.monthReviews().markReviewedBefore(month)
     }
 
     // Settings. Frozen segments don't change (D3): edits count from the next segment.

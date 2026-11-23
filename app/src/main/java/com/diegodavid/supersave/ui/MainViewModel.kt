@@ -11,11 +11,17 @@ import com.diegodavid.supersave.data.Settings
 import com.diegodavid.supersave.data.SuperSaveDatabase
 import com.diegodavid.supersave.data.TestData
 import com.diegodavid.supersave.engine.Weighing
+import com.diegodavid.supersave.data.ActivityItem
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import com.diegodavid.supersave.AppClock
+import java.time.LocalDate
+import java.time.YearMonth
 
 /**
  * Shared by the screens after setup: home, weigh, correct balance, settings.
@@ -32,6 +38,13 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), initial)
 
     val home: StateFlow<HomeData?> = repository.observeHome().asState(null)
+
+    /** How many days back the activity log shows; "Show older" adds a month (D34). */
+    private val activityDays = MutableStateFlow(31L)
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val activity: StateFlow<List<ActivityItem>> =
+        activityDays.flatMapLatest { repository.observeActivity(it) }.asState(emptyList())
+    fun showOlderActivity() { activityDays.value += 31 }
     val settings: StateFlow<Settings?> = repository.observeSettings().asState(null)
     val incomes: StateFlow<List<RecurringIncome>> = repository.observeIncomes().asState(emptyList())
     val payments: StateFlow<List<FixedPayment>> = repository.observePayments().asState(emptyList())
@@ -41,10 +54,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     suspend fun weigh(amount: Long): Weighing? = repository.weigh(amount, today())
 
-    fun addExpense(amount: Long, note: String?) = run { repository.addExpense(today(), amount, note) }
-    fun deleteExpense(id: Long) = run { repository.deleteExpense(id) }
-    fun addSurpriseMoney(amount: Long, note: String?, save: Boolean) =
-        run { repository.addSurpriseMoney(amount, note, save, today()) }
+    /** [date]: today, or an earlier day of this month (D35). */
+    fun addExpense(amount: Long, note: String?, date: LocalDate = today()) =
+        run { repository.addExpense(date, amount, note) }
+    fun reviewMonth(month: YearMonth, keep: Boolean) = run { repository.reviewMonth(month, keep, today()) }
+    fun updateEntry(id: Long, amount: Long, note: String?) = run { repository.updateEntry(id, amount, note) }
+    fun removeEntry(id: Long) = run { repository.removeEntry(id) }
+    fun addExtraMoney(amount: Long, note: String?, save: Boolean) =
+        run { repository.addExtraMoney(amount, note, save, today()) }
     fun correctBalance(real: Long) = run { repository.correctBalance(real, today()) }
 
     fun saveSettings(settings: Settings) = run { repository.saveSettings(settings) }

@@ -26,15 +26,16 @@ import com.diegodavid.supersave.data.SuperSaveDatabase
 import com.diegodavid.supersave.ui.CorrectBalanceScreen
 import com.diegodavid.supersave.ui.HomeScreen
 import com.diegodavid.supersave.ui.MainViewModel
+import com.diegodavid.supersave.ui.MonthReviewScreen
 import com.diegodavid.supersave.ui.SettingsScreen
-import com.diegodavid.supersave.ui.SurpriseMoneyScreen
+import com.diegodavid.supersave.ui.ExtraMoneyScreen
 import com.diegodavid.supersave.ui.WeighScreen
 import com.diegodavid.supersave.ui.setup.SetupScreen
 import com.diegodavid.supersave.ui.theme.SuperSaveTheme
 import kotlinx.coroutines.flow.map
 
 /** The screens after setup. Home is the start; the others go back to it. */
-enum class Screen { HOME, EXPENSE, SURPRISE, CORRECT, SETTINGS }
+enum class Screen { HOME, EXPENSE, EXTRA, CORRECT, SETTINGS, REVIEW }
 
 /**
  * The one screen Android opens when you tap the app icon or a widget.
@@ -111,13 +112,15 @@ private fun MainScreens(modifier: Modifier, requested: MutableState<Screen?>, vm
         Screen.HOME -> HomeScreen(
             vm,
             onExpense = { screen = Screen.EXPENSE },
-            onSurprise = { screen = Screen.SURPRISE },
+            onExtra = { screen = Screen.EXTRA },
+            onReview = { screen = Screen.REVIEW },
             onCorrect = { screen = Screen.CORRECT },
             onSettings = { screen = Screen.SETTINGS },
             modifier = modifier,
         )
         Screen.EXPENSE -> WeighScreen(vm, onDone = home, modifier = modifier)
-        Screen.SURPRISE -> SurpriseMoneyScreen(vm, onDone = home, modifier = modifier)
+        Screen.EXTRA -> ExtraMoneyScreen(vm, onDone = home, modifier = modifier)
+        Screen.REVIEW -> MonthReviewScreen(vm, onDone = home, modifier = modifier)
         Screen.CORRECT -> CorrectBalanceScreen(vm, onDone = home, modifier = modifier)
         Screen.SETTINGS -> SettingsScreen(vm, onBack = home, modifier = modifier)
     }

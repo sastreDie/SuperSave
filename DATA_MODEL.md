@@ -3,7 +3,8 @@
 Status: **v2, approved (D23, D24).**
 Under Nivel 2 (D11) the data model is the team's decision; Claude drafted it.
 
-No code yet: these are the tables Room will store on the phone.
+These are the tables Room stores on the phone. Database **version 3** (v2 added
+`linkedEntryId`, v3 added `reviewed`; Room migrates old data automatically).
 
 ---
 
@@ -66,8 +67,12 @@ says "transaction row", it means a `LedgerEntry`.
 | note | String? | "Tacos", "Freelance gig" |
 | incomeId | Long? | which `RecurringIncome` created it, null otherwise |
 | paymentId | Long? | which `FixedPayment` created it (auto-deducted, D15), null otherwise |
+| linkedEntryId | Long? | v2: a `SAVINGS_TRANSFER` that belongs to another row, e.g. the "save it" half of extra money (D31). Edited and removed together with it (D34) |
 
-One-off extra income (D7) = an `INCOME` row with no `incomeId`.
+One-off extra money (D7, D31) = an `INCOME` row with no `incomeId`. If saved, plus a
+linked `SAVINGS_TRANSFER` of the same amount.
+Recurring incomes and fixed payments get their rows automatically when they come
+due (D30).
 No categories (D23).
 
 ### `RecurringIncome`
@@ -111,13 +116,20 @@ date?" logic is written once for `Schedule`, not twice.
 `weekBudget` = sum of the week's segments. We store them because they're frozen
 (D3), and to compare this week to last week for the messages (D6).
 
-### `MonthReview` (D9, D21)
+### `MonthReview` (D9, D21, D33)
+One row per closed month, written when the month closes.
 | Field | Type | Notes |
 |---|---|---|
 | month | YearMonth | primary key |
 | savingsGoal | Long (cents) | the goal that month |
-| surplus | Long (cents) | extra beyond the goal |
-| choice | enum? | `KEEP` / `SPEND`; null = not reviewed (the default from Settings applies) |
+| surplus | Long (cents) | what was left of the month's last segment budget; negative if that week was overspent (it came out of the goal) |
+| choice | enum? | `KEEP` / `SPEND`: what was done with the surplus. Set to the Settings default at close; the review can change it. null only in rows from before v3 (= `KEEP`) |
+| reviewed | Boolean | v3: false until the user has seen the review screen |
+
+**Month close** (D33) writes one `SAVINGS_TRANSFER` dated the month's last day: the
+goal (minus any last-week overspend) plus the surplus if `KEEP`. Changing the choice
+in the review later writes another `SAVINGS_TRANSFER` dated that day: positive into
+savings, negative back out.
 
 ### `Settings`: one row
 | Field | Type | Notes |

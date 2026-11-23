@@ -2,6 +2,7 @@ package com.diegodavid.supersave
 
 import android.app.Application
 import com.diegodavid.supersave.data.SuperSaveDatabase
+import com.diegodavid.supersave.widget.MidnightRefreshWorker
 import com.diegodavid.supersave.widget.refreshWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +27,7 @@ class SuperSaveApp : Application() {
     override fun onCreate() {
         super.onCreate()
         AppClock.init(this)
+        MidnightRefreshWorker.schedule(this)
         val db = SuperSaveDatabase.get(this)
         appScope.launch {
             db.invalidationTracker

@@ -59,6 +59,12 @@ The tone rule still applies to every other message.
   - **Spend it**: the extra grows next month's budget.
 - Design goal: the important numbers go up, so the user feels good.
 
+**Update (built):** months close automatically with the default (D21). Home
+then shows "November is over. See how it went", which opens the review: "You saved"
+(big), the goal line (and how far short, D25, in the D6 tone), and Keep it / Spend it
+for the leftover, set to what the close did. Changing it moves the leftover into or
+out of savings that day, and like a correction (D18) the current week feels it.
+
 ### D10. Implementation order (Diego, proposed by Claude)
 1. Data model
 2. Empty app scaffold that builds (Claude)
@@ -213,7 +219,7 @@ and nothing is written twice. Cancelling a payment or ending an income stops it
 from that day on. Editing one restarts its schedule from today. The real amount
 can still differ (e.g. a smaller paycheck); Correct my balance fixes that (D14).
 
-### D31. Surprise money: save it or spend it (Diego)
+### D31. Extra money: save it or spend it (Diego)
 A button on the home screen adds one-off money that isn't on any schedule (D7).
 The user picks, with the Keep it / Spend it setting as the default (D21):
 - **Save it:** an `INCOME` row plus a `SAVINGS_TRANSFER` of the same amount. It's
@@ -243,9 +249,38 @@ it closes with the default choice (D21), dated its last day:
 - Money that arrived during that last segment (e.g. salary on the 30th) was never
   part of this month's budget, so it carries over to next month (D20).
 
+With Spend it, unspent money keeps rolling into the next month until it's spent;
+only the goal is saved each month. Capping it (e.g. one month only, then saved)
+was considered and rejected for now (Diego).
+
 If the app wasn't opened for a while, each missed month closes in order the next
 time it calculates. The screen to review a month and change the choice (D9) is
 still to be built.
+
+### D34. Activity log, adjustable (Diego asked; details by Claude)
+Home lists everything from the last month, newest first: expenses, recurring
+incomes, extra money (marked "saved" when it went to savings), fixed payments,
+balance corrections and money moved to savings. "Show older" goes back another month.
+Tap a line to adjust it:
+- **Expenses and extra money:** change the amount or note, or remove them. Saved
+  extra money changes or disappears together with its savings half.
+- **Recurring incomes and fixed payments:** change that one time's amount (e.g. a
+  smaller paycheck). They can't be removed, because the app would record them
+  again (D30); set them to $0 if they didn't happen. Settings changes every time.
+- **Corrections and moves to savings** are shown but can't be changed: they change
+  frozen budgets and savings (D18, D33).
+
+The widgets also redraw once a day just after midnight (WorkManager), so a new
+week shows up on the home screen without opening the app.
+
+### D35. Expenses can be dated earlier in the month (Diego asked; limit by Claude)
+The expense screen has a date, today by default. Any earlier day of the **current
+month** can be picked. Earlier months can't: they're closed and their savings were
+already moved (D33); Correct my balance covers a forgotten expense there.
+An expense in an earlier week doesn't change this week's money; it comes out of
+what's left this month, so the weighing (D29) isn't shown for it.
+Home also shows the D25 line when "left this month" is negative: how much short,
+and that spending a little less closes the gap.
 
 ---
 

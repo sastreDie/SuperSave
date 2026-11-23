@@ -29,11 +29,11 @@ import com.diegodavid.supersave.R
 import com.diegodavid.supersave.data.ReviewChoice
 
 /**
- * Surprise money (D7, D31): money that arrived outside any schedule. The user picks
+ * Extra money (D7, D31): money that arrived outside any schedule. The user picks
  * whether it goes to savings or to this month's spending. (UI by Claude, Nivel 2.)
  */
 @Composable
-fun SurpriseMoneyScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modifier) {
+fun ExtraMoneyScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modifier) {
     val settings by vm.settings.collectAsStateWithLifecycle()
     var amountText by rememberSaveable { mutableStateOf("") }
     var note by rememberSaveable { mutableStateOf("") }
@@ -47,27 +47,27 @@ fun SurpriseMoneyScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifie
             Modifier.weight(1f).verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            ScreenTitle(stringResource(R.string.surprise_title), stringResource(R.string.surprise_body))
+            ScreenTitle(stringResource(R.string.extra_title), stringResource(R.string.extra_body))
             MoneyField(
                 value = amountText,
                 onValueChange = { amountText = it },
-                label = stringResource(R.string.surprise_amount),
+                label = stringResource(R.string.extra_amount),
                 isError = amountText.isNotBlank() && amount == null,
             )
             OutlinedTextField(
                 value = note,
                 onValueChange = { note = it },
-                label = { Text(stringResource(R.string.surprise_note)) },
+                label = { Text(stringResource(R.string.extra_note)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
-            SectionTitle(stringResource(R.string.surprise_question))
+            SectionTitle(stringResource(R.string.extra_question))
             Column(Modifier.selectableGroup()) {
-                RadioRow(stringResource(R.string.surprise_save), saveIt) { save = true }
-                RadioRow(stringResource(R.string.surprise_spend), !saveIt) { save = false }
+                RadioRow(stringResource(R.string.extra_save), saveIt) { save = true }
+                RadioRow(stringResource(R.string.extra_spend), !saveIt) { save = false }
             }
             Text(
-                stringResource(if (saveIt) R.string.surprise_save_note else R.string.surprise_spend_note),
+                stringResource(if (saveIt) R.string.extra_save_note else R.string.extra_spend_note),
                 style = MaterialTheme.typography.bodySmall,
             )
         }
@@ -75,9 +75,9 @@ fun SurpriseMoneyScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifie
             OutlinedButton(onClick = onDone) { Text(stringResource(android.R.string.cancel)) }
             Spacer(Modifier.weight(1f))
             Button(
-                onClick = { vm.addSurpriseMoney(amount!!, note.trim().ifBlank { null }, saveIt); onDone() },
+                onClick = { vm.addExtraMoney(amount!!, note.trim().ifBlank { null }, saveIt); onDone() },
                 enabled = amount != null,
-            ) { Text(stringResource(R.string.surprise_add)) }
+            ) { Text(stringResource(R.string.extra_add)) }
         }
     }
 }

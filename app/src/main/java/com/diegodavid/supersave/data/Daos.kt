@@ -35,13 +35,29 @@ interface LedgerDao {
     @Query("SELECT COALESCE(-SUM(amount), 0) FROM ledger WHERE type = 'EXPENSE' AND date BETWEEN :start AND :end")
     suspend fun spentBetween(start: LocalDate, end: LocalDate): Long
 
-    /** The expense rows themselves, newest first (the list on the home screen). */
-    @Query("SELECT * FROM ledger WHERE type = 'EXPENSE' AND date BETWEEN :start AND :end ORDER BY date DESC, id DESC")
-    suspend fun expensesBetween(start: LocalDate, end: LocalDate): List<LedgerEntry>
+    /**
+     * The activity log on home: every row between two dates, newest first, except the
+     * savings halves of extra money (they're shown as part of their income row).
+     */
+    @Query("SELECT * FROM ledger WHERE date BETWEEN :start AND :end AND linkedEntryId IS NULL ORDER BY date DESC, id DESC")
+    suspend fun activityBetween(start: LocalDate, end: LocalDate): List<LedgerEntry>
 
-    /** Only expenses can be deleted by hand; the other rows are history. */
-    @Query("DELETE FROM ledger WHERE id = :id AND type = 'EXPENSE'")
-    suspend fun deleteExpense(id: Long)
+    /** Ids of the rows that have a linked savings half (extra money that was saved). */
+    @Query("SELECT linkedEntryId FROM ledger WHERE linkedEntryId IS NOT NULL AND date BETWEEN :start AND :end")
+    suspend fun savedLinksBetween(start: LocalDate, end: LocalDate): List<Long>
+
+    @Query("SELECT * FROM ledger WHERE id = :id")
+    suspend fun get(id: Long): LedgerEntry?
+
+    @Update
+    suspend fun update(entry: LedgerEntry)
+
+    /** Removes a row and its linked savings half, if it has one. */
+    @Query("DELETE FROM ledger WHERE id = :id OR linkedEntryId = :id")
+    suspend fun deleteWithLinked(id: Long)
+
+    @Query("UPDATE ledger SET amount = :amount WHERE linkedEntryId = :id")
+    suspend fun updateLinkedAmount(id: Long, amount: Long)
 
     /** Dates a fixed payment was already deducted, so it's never deducted twice. */
     @Query("SELECT date FROM ledger WHERE paymentId = :paymentId")
@@ -121,6 +137,17 @@ interface MonthReviewDao {
 
     @Query("SELECT * FROM month_reviews WHERE month = :month")
     suspend fun get(month: java.time.YearMonth): MonthReview?
+
+    /** The newest closed month the user hasn't reviewed yet (D9), or null. */
+    @Query("SELECT * FROM month_reviews WHERE reviewed = 0 ORDER BY month DESC LIMIT 1")
+    suspend fun latestUnreviewed(): MonthReview?
+
+    @Update
+    suspend fun update(review: MonthReview)
+
+    /** After reviewing a month, older unreviewed ones keep their automatic choice. */
+    @Query("UPDATE month_reviews SET reviewed = 1 WHERE month < :month")
+    suspend fun markReviewedBefore(month: java.time.YearMonth)
 }
 
 @Dao
