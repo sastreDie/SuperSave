@@ -28,6 +28,9 @@ Esos comentarios describen la versión actual del archivo, no la primera.
   la interfaz tipo tablero, todos los archivos XML, las funciones básicas o
   repetitivas (días del mes y de la semana, presupuestos) y el resto de las
   tablas de datos.
+- **Pruebas unitarias:** todas las pruebas de JUnit (`app/src/test`) las escribió
+  la IA, a partir de las fórmulas y los ejemplos que definió el equipo en
+  `DESIGN.md`.
 - **Consultas:** durante la programación el equipo le hizo consultas a la IA
   sobre Kotlin, Compose y las bibliotecas de Jetpack.
 
