@@ -28,6 +28,11 @@ Esos comentarios describen la versión actual del archivo, no la primera.
   la interfaz tipo tablero, todos los archivos XML, las funciones básicas o
   repetitivas (días del mes y de la semana, presupuestos) y el resto de las
   tablas de datos.
+- **Widgets (escritos en conjunto):** el equipo participó activamente en
+  escribir el código de los widgets con Glance (`widget/`). La IA explicó cómo
+  funcionan, guió la implementación y revisó el código que escribió el equipo,
+  y ayudó con las correcciones posteriores. La tarea diaria de WorkManager
+  (`MidnightRefreshWorker`) la escribió la IA.
 - **Pruebas unitarias:** todas las pruebas de JUnit (`app/src/test`) las escribió
   la IA, a partir de las fórmulas y los ejemplos que definió el equipo en
   `DESIGN.md`.
