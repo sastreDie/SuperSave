@@ -40,6 +40,7 @@ import com.diegodavid.supersave.ui.RadioRow
 import com.diegodavid.supersave.ui.RecurringItemForm
 import com.diegodavid.supersave.ui.ScreenTitle
 import com.diegodavid.supersave.ui.formatMoney
+import com.diegodavid.supersave.ui.parseMoney
 import com.diegodavid.supersave.ui.scheduleSummary
 import java.time.DayOfWeek
 
@@ -98,6 +99,10 @@ private fun WelcomeStep(vm: SetupViewModel) {
         RadioRow(stringResource(R.string.monday), vm.weekStart == DayOfWeek.MONDAY) { vm.weekStart = DayOfWeek.MONDAY }
         RadioRow(stringResource(R.string.sunday), vm.weekStart == DayOfWeek.SUNDAY) { vm.weekStart = DayOfWeek.SUNDAY }
     }
+    // D36: the easiest moment to start is right after getting paid.
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+        Text(stringResource(R.string.setup_payday_tip), Modifier.padding(16.dp))
+    }
     // TEMPORARY, for testing until the real screens are done.
     TextButton(onClick = { vm.loadTestData() }) { Text(stringResource(R.string.debug_load)) }
 }
@@ -111,6 +116,27 @@ private fun BalanceStep(vm: SetupViewModel) {
         label = stringResource(R.string.setup_balance_label),
         isError = vm.balanceText.isNotBlank() && vm.balance == null,
     )
+    // D36: savings you already have are kept out of the budget from day one.
+    Text(stringResource(R.string.setup_savings_question), style = MaterialTheme.typography.titleMedium)
+    Text(stringResource(R.string.setup_savings_question_body), style = MaterialTheme.typography.bodyMedium)
+    MoneyField(
+        value = vm.savingsText,
+        onValueChange = { vm.savingsText = it },
+        label = stringResource(R.string.setup_savings_part_label),
+        isError = vm.savings == null,
+    )
+    if (vm.savings == null && parseMoney(vm.savingsText) != null) {
+        Text(stringResource(R.string.setup_savings_too_much), color = MaterialTheme.colorScheme.error)
+    }
+    // What's left is spread over the next 30 days, like a payday.
+    val balance = vm.balance
+    val savings = vm.savings
+    if (balance != null && savings != null && balance - savings > 0) {
+        Text(
+            stringResource(R.string.setup_for_spending, formatMoney(balance - savings)),
+            style = MaterialTheme.typography.bodySmall,
+        )
+    }
 }
 
 @Composable

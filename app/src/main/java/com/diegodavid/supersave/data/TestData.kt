@@ -35,7 +35,10 @@ object TestData {
             schedule = Schedule(ScheduleType.BIWEEKLY, novFirst)))
 
         db.ledger().insertAll(listOf(
-            LedgerEntry(date = d(10, 31), amount = 500_000L, type = EntryType.BALANCE_CORRECTION, note = "Starting balance"),
+            // Like a normal month (D36): a little old money, plus October's last paycheck,
+            // which is spread over Oct 31 – Nov 29.
+            LedgerEntry(date = d(10, 30), amount = 100_000L, type = EntryType.BALANCE_CORRECTION, note = "Starting balance"),
+            LedgerEntry(date = d(10, 31), amount = 600_000L, type = EntryType.INCOME, incomeId = salary),
             // Already-due payments and income. The repository would add these by itself (D30);
             // written here so the data is easy to read.
             LedgerEntry(date = d(11, 1), amount = -300_000L, type = EntryType.FIXED_PAYMENT, paymentId = rent),

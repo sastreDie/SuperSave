@@ -19,9 +19,12 @@ fun freezeSegmentBudget(
     savedBefore: Long,
     payments: List<FixedPayment>,
     monthlySavingsGoal: Long,
+    // D36: the part of money already received that belongs to later days. It's not part
+    // of the base; each segment gets its own days' share of it instead (releasedIn).
+    pendingBefore: Long = 0L,
 ): Long {
     val free = freeMoney(
-        spendable = balanceBefore - savedBefore,
+        spendable = balanceBefore - savedBefore - pendingBefore,
         upcomingPayments = paymentsDueIn(payments, restOfMonth(segment.start)),
         savingsGoal = monthlySavingsGoal,
     )

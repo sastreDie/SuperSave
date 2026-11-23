@@ -20,11 +20,11 @@ import androidx.room.TypeConverters
         MonthReview::class,
         Settings::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
-    // v2 adds ledger.linkedEntryId; v3 adds month_reviews.reviewed. Room writes these
+    // v2 adds ledger.linkedEntryId; v3 adds month_reviews.reviewed; v4 adds settings.startedOn. Room writes these
     // migrations itself from the exported schemas (app/schemas), and existing data is kept.
-    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3)],
+    autoMigrations = [AutoMigration(from = 1, to = 2), AutoMigration(from = 2, to = 3), AutoMigration(from = 3, to = 4)],
 )
 @TypeConverters(Converters::class)
 abstract class SuperSaveDatabase : RoomDatabase() {

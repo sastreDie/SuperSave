@@ -24,6 +24,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -74,8 +75,22 @@ fun WeighScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modi
             // Mini dashboard (D32): what matters, after paying the amount typed so far.
             home?.let { h ->
                 val cost = amount ?: 0L
+                // This week is the number that matters most, so it's the big one.
+                val weekAfter = h.week.left - if (pastWeek) 0 else cost
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                        Text(stringResource(R.string.left_this_week), style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            formatMoney(weekAfter),
+                            style = MaterialTheme.typography.displaySmall,
+                            color = if (weekAfter < 0) MaterialTheme.colorScheme.error else Color.Unspecified,
+                        )
+                    }
+                }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    StatTile(stringResource(R.string.stat_week_short), h.week.left - if (pastWeek) 0 else cost, Modifier.weight(1f), small = true)
                     StatTile(stringResource(R.string.stat_month), h.leftThisMonth - cost, Modifier.weight(1f), small = true)
                     StatTile(stringResource(R.string.stat_balance), h.balance - cost, Modifier.weight(1f), small = true)
                 }

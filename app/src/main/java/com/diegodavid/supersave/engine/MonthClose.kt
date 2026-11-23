@@ -1,7 +1,21 @@
 package com.diegodavid.supersave.engine
 
+import java.time.LocalDate
+import java.time.YearMonth
+
 // Month close (D9, D21, D24, D33). Written by Claude after Diego found that savings
 // were never moved; the rule follows D9/D21 and is for Diego to confirm.
+
+/**
+ * The savings goal for [month] (D37). In the month the app was set up ([startedOn]),
+ * only the days from setup on count: setting up on Nov 22 with a ₱1,000 goal asks for
+ * ₱1,000 × 9/30 = ₱300 in November, then the full ₱1,000 from December. Rounded down (D26).
+ */
+fun goalForMonth(goal: Long, month: YearMonth, startedOn: LocalDate?): Long {
+    if (startedOn == null || YearMonth.from(startedOn) != month) return goal
+    val days = month.lengthOfMonth() - startedOn.dayOfMonth + 1
+    return Math.floorDiv(goal * days, month.lengthOfMonth().toLong())
+}
 
 /**
  * How much goes into the savings bucket when a month closes. Amounts in cents.

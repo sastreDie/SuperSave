@@ -26,6 +26,8 @@ Only those two options. Default: Monday.
 This week's budget never changes because money arrived. New income only enters
 the calculation at the **next** week start.
 
+**Replaced by D36 (Diego):** money coming in now counts the day it arrives, spread over the next 30 days.
+
 ### D5. Surplus and overspending are spread across all remaining weeks of the month (Diego)
 Underspending → every remaining week gets a bit more.
 Overspending → every remaining week gets a bit less (a gentler hit than taking it all from next week).
@@ -136,11 +138,15 @@ tighter and the second half more generous. Diego chose this as the most
 effective way to save. It's a prototype Diego will keep using, so the model can
 be changed later if it doesn't work in practice.
 
+**Replaced by D36 (Diego):** money coming in now counts the day it arrives, spread over the next 30 days.
+
 ### D20. Each part of a split week freezes at its own start (Diego)
 Mon Mar 30 to Sun Apr 5 with salary on Mar 31: March's 2 days freeze on Mar 30,
 and April's 5 days freeze on **Apr 1**, after the salary has arrived. The user
 sees one week whose "left this week" jumps up on the 1st. The month review (D9)
 happens at the end of the **month**, not the end of the week.
+
+**Update (D36):** the split by month still holds for the base budget, but a payday now shows up the day it arrives: the salary on the 30th gives its first day to the 30th and the rest to the next 29 days.
 
 ### D21. Month review default is "Keep it", and the user can change it (Diego)
 If the month hasn't been reviewed when the new month starts, the surplus is
@@ -183,6 +189,8 @@ segment, which is D4 taken literally. Segments freeze lazily: the first time the
 app or the widget asks about the week, using the balance as of the segment's
 start, so opening the app on Wednesday gives the same budget as on Monday.
 
+**Replaced by D36 (Diego):** money coming in now counts the day it arrives, spread over the next 30 days.
+
 ### D28. Setup dates the starting balance so the first week isn't empty (Claude, to confirm)
 Because of D27, a balance dated today wouldn't count until the next segment, so
 setting up on a Wednesday would give a ₱0 week. Setup instead dates the starting
@@ -192,6 +200,8 @@ it. Incomes and payments added during setup start counting **from tomorrow**
 part of the balance you typed, so it's never counted twice. Incomes and payments
 added later in Settings count from **today**, because the app's balance doesn't
 include them yet.
+
+**Replaced by D36/D37:** setup now asks how much of the balance is savings; the rest is starting money, spread over 30 days from the setup day.
 
 ### D29. Weigh the payment (Claude, to confirm; D11 lists it as Diego's logic)
 Before paying for something, the user types the amount and sees, live:
@@ -281,6 +291,34 @@ An expense in an earlier week doesn't change this week's money; it comes out of
 what's left this month, so the weighing (D29) isn't shown for it.
 Home also shows the D25 line when "left this month" is negative: how much short,
 and that spending a little less closes the gap.
+
+### D36. Money coming in is spread evenly over the next 30 days (Diego)
+Waiting until next week for a payday felt unintuitive. Now every bit of money coming
+in counts **the day the app records it**, split into 30 equal daily shares starting
+that day, whatever month those days fall in:
+- recurring paydays (D30), extra money you spend (D31), money taken back out of
+  savings by a month review (D21), and the starting money at setup.
+- ₱10,000 on a Sunday: that Sunday gets ₱333.33, each of the next four weeks
+  ₱2,333.33, and the 30th day the rest (₱333.34). Rounded down on the running total,
+  so the 30 days always add up exactly (D26).
+- A week's budget = its frozen base (D3: bills and the goal set aside, D5 leftovers
+  and overspending spread over the rest of the month) + its days' share of money
+  that has come in. A payday mid-week raises "left this week" right away.
+- Shares are worked out each time, not stored, so editing a paycheck in the
+  activity log (D34) fixes every week that depends on it.
+- Month close (D33) only saves this month's days: the part of a late payday that
+  belongs to next month stays spendable. "Left this month" doesn't count it either.
+- Corrections (D18) and moving the leftover into savings in a review stay immediate.
+- Setup asks **how much of the balance is savings**; it goes straight into the savings
+  bucket (D24) and is never budgeted. A tip suggests setting up right after payday,
+  at the start of the month.
+Replaces D4, D19, D27 and D28. Spreading over the rest of the month instead was
+considered: a payday on the 28th would get squeezed into 3 days.
+
+### D37. In the setup month the savings goal counts only from setup (Claude, to confirm)
+Setting up on Nov 22 with a ₱1,000 goal asks for ₱1,000 × 9/30 = ₱300 in November,
+then the full goal from December. Without this, the whole month's goal came out of
+the few days left and the first week started negative.
 
 ---
 

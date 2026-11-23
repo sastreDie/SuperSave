@@ -132,6 +132,14 @@
     <string name="weigh_past_week">Ese día es de una semana anterior, así que el dinero de esta semana no cambia. Sale de lo que queda este mes.</string>
     <string name="activity_from_savings">Sacado de ahorros</string>
 
+    <string name="setup_payday_tip">Consejo: lo más fácil es empezar justo después de que te paguen, al inicio del mes.</string>
+    <string name="setup_savings_question">¿Cuánto de eso son ahorros?</string>
+    <string name="setup_savings_question_body">Dinero que ya ahorraste y no quieres gastar. SuperSave lo deja fuera de tu presupuesto. Déjalo vacío si no tienes.</string>
+    <string name="setup_savings_part_label">Ahorros</string>
+    <string name="setup_savings_too_much">Es más que el dinero que tienes.</string>
+    <string name="setup_for_spending">Los otros %1$s se reparten en los próximos 30 días, como un pago.</string>
+    <string name="activity_starting">Dinero inicial</string>
+
     <string name="widget_label">Resumen de SuperSave</string>
     <string name="widget_description">Esta semana, este mes, tu saldo y tus ahorros</string>
     <string name="quick_widget_label">Gasto rápido</string>
@@ -147,7 +155,7 @@
     <string name="extra_save">Ahorrarlo</string>
     <string name="extra_spend">Gastarlo</string>
     <string name="extra_save_note">Se va directo a tus ahorros. Tu presupuesto no cambia.</string>
-    <string name="extra_spend_note">Se suma al dinero de este mes y aparece en tu presupuesto semanal a partir de la próxima semana.</string>
+    <string name="extra_spend_note">Se suma a tu dinero para gastar hoy, repartido por igual en los próximos 30 días.</string>
     <string name="extra_add">Agregar</string>
     <string name="widget_no_data">Abre SuperSave para configurarlo</string>
 

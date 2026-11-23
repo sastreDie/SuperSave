@@ -36,6 +36,8 @@ class SetupViewModel(app: Application) : AndroidViewModel(app) {
 
     var weekStart by mutableStateOf(DayOfWeek.MONDAY)
     var balanceText by mutableStateOf("")
+    /** D36: how much of the balance is savings. Empty = none. */
+    var savingsText by mutableStateOf("")
     val incomes = mutableStateListOf<RecurringIncome>()
     val payments = mutableStateListOf<FixedPayment>()
     var goalText by mutableStateOf("")
@@ -52,12 +54,17 @@ class SetupViewModel(app: Application) : AndroidViewModel(app) {
     /** The balance can be zero or negative (D25); it just has to be a number. */
     val balance: Long? get() = parseMoney(balanceText)
 
+    /** Savings can't be negative or more than the money you have. */
+    val savings: Long?
+        get() = if (savingsText.isBlank()) 0L
+        else parseMoney(savingsText)?.takeIf { it >= 0 && it <= (balance ?: 0L).coerceAtLeast(0L) }
+
     /** An empty goal means "no goal" (₱0). A goal can't be negative. */
     val goal: Long? get() = if (goalText.isBlank()) 0L else parseMoney(goalText)?.takeIf { it >= 0 }
 
     val canContinue: Boolean
         get() = !saving && when (step) {
-            SetupStep.BALANCE -> balance != null
+            SetupStep.BALANCE -> balance != null && savings != null
             SetupStep.SAVINGS -> goal != null
             else -> true
         }
@@ -92,6 +99,7 @@ class SetupViewModel(app: Application) : AndroidViewModel(app) {
                     SetupData(
                         weekStart = weekStart,
                         startingBalance = balance,
+                        startingSavings = savings ?: 0L,
                         incomes = incomes.toList(),
                         payments = payments.toList(),
                         monthlySavingsGoal = goal,

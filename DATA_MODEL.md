@@ -3,8 +3,8 @@
 Status: **v2, approved (D23, D24).**
 Under Nivel 2 (D11) the data model is the team's decision; Claude drafted it.
 
-These are the tables Room stores on the phone. Database **version 3** (v2 added
-`linkedEntryId`, v3 added `reviewed`; Room migrates old data automatically).
+These are the tables Room stores on the phone. Database **version 4** (v2 added
+`linkedEntryId`, v3 added `reviewed`, v4 added `startedOn`; Room migrates old data automatically).
 
 ---
 
@@ -63,7 +63,7 @@ says "transaction row", it means a `LedgerEntry`.
 | id | Long | auto |
 | date | LocalDate | when it happened |
 | amount | Long (cents) | **positive = money in, negative = money out** |
-| type | enum | `EXPENSE`, `INCOME`, `FIXED_PAYMENT`, `BALANCE_CORRECTION`, `SAVINGS_TRANSFER` |
+| type | enum | `EXPENSE`, `INCOME`, `FIXED_PAYMENT`, `BALANCE_CORRECTION`, `SAVINGS_TRANSFER`, `STARTING_MONEY` (D36: the money for spending at setup, spread over 30 days like a payday) |
 | note | String? | "Tacos", "Freelance gig" |
 | incomeId | Long? | which `RecurringIncome` created it, null otherwise |
 | paymentId | Long? | which `FixedPayment` created it (auto-deducted, D15), null otherwise |
@@ -137,6 +137,12 @@ savings, negative back out.
 | weekStartDay | enum | `MONDAY` / `SUNDAY` (D2) |
 | monthlySavingsGoal | Long (cents) | |
 | defaultReviewChoice | enum | `KEEP` (default) / `SPEND` (D21) |
+| startedOn | LocalDate? | v4: the day setup was finished; in that month the goal counts only from then on (D37) |
+
+### Money coming in (D36)
+Not a table: incomes, starting money and money taken out of savings are spread over
+30 days when the budget is worked out. Nothing extra is stored, so edits in the
+activity log change it automatically.
 
 ---
 

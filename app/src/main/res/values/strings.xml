@@ -139,6 +139,14 @@
     <string name="weigh_past_week">That day is in an earlier week, so this week\'s money doesn\'t change. It comes out of what\'s left this month.</string>
     <string name="activity_from_savings">Taken out of savings</string>
 
+    <string name="setup_payday_tip">Tip: it\'s easiest to start right after payday, at the start of the month.</string>
+    <string name="setup_savings_question">How much of that is savings?</string>
+    <string name="setup_savings_question_body">Money you already saved and don\'t want to spend. SuperSave keeps it out of your budget. Leave it empty if none.</string>
+    <string name="setup_savings_part_label">Savings</string>
+    <string name="setup_savings_too_much">That\'s more than the money you have.</string>
+    <string name="setup_for_spending">The other %1$s is spread over the next 30 days, like a payday.</string>
+    <string name="activity_starting">Starting money</string>
+
     <!-- Widget picker -->
     <string name="widget_label">SuperSave summary</string>
     <string name="widget_description">This week, this month, your balance and savings</string>
@@ -156,7 +164,7 @@
     <string name="extra_save">Save it</string>
     <string name="extra_spend">Spend it</string>
     <string name="extra_save_note">It goes straight to your savings. Your budget stays the same.</string>
-    <string name="extra_spend_note">It\'s added to this month\'s money and shows up in your weekly budget starting next week.</string>
+    <string name="extra_spend_note">It\'s added to your spending money today, spread evenly over the next 30 days.</string>
     <string name="extra_add">Add</string>
     <string name="widget_no_data">Open SuperSave to set up</string>
 

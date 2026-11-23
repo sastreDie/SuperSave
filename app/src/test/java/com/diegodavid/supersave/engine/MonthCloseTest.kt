@@ -30,6 +30,16 @@ class MonthCloseTest {
     }
 
     @Test
+    fun setupMonth_goalCountsOnlyFromSetup() {
+        // D37: set up Sun Nov 22 with a $1,000 goal: 9 of 30 days -> $300; December is full.
+        val nov22 = java.time.LocalDate.of(2026, 11, 22)
+        assertEquals(30_000L, goalForMonth(100_000L, java.time.YearMonth.of(2026, 11), nov22))
+        assertEquals(100_000L, goalForMonth(100_000L, java.time.YearMonth.of(2026, 12), nov22))
+        // Set up before v4 (no date): the full goal, as before.
+        assertEquals(100_000L, goalForMonth(100_000L, java.time.YearMonth.of(2026, 11), null))
+    }
+
+    @Test
     fun noGoal_keepStillSavesTheSurplus() {
         assertEquals(30_000L, monthCloseTransfer(0L, 30_000L, keep = true))
         assertEquals(0L, monthCloseTransfer(0L, 30_000L, keep = false))

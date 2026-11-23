@@ -59,6 +59,19 @@ interface LedgerDao {
     @Query("UPDATE ledger SET amount = :amount WHERE linkedEntryId = :id")
     suspend fun updateLinkedAmount(id: Long, amount: Long)
 
+    /**
+     * Money coming in that's spread over 30 days (D36), dated between two days:
+     * incomes that weren't saved, starting money, and money taken back out of savings
+     * (negative SAVINGS_TRANSFER rows that aren't the halves of extra money).
+     */
+    @Query(
+        "SELECT * FROM ledger WHERE date BETWEEN :start AND :end AND (" +
+            "(type IN ('INCOME', 'STARTING_MONEY') " +
+            "AND id NOT IN (SELECT linkedEntryId FROM ledger WHERE linkedEntryId IS NOT NULL)) " +
+            "OR (type = 'SAVINGS_TRANSFER' AND amount < 0 AND linkedEntryId IS NULL))"
+    )
+    suspend fun moneyInBetween(start: LocalDate, end: LocalDate): List<LedgerEntry>
+
     /** Dates a fixed payment was already deducted, so it's never deducted twice. */
     @Query("SELECT date FROM ledger WHERE paymentId = :paymentId")
     suspend fun datesForPayment(paymentId: Long): List<LocalDate>

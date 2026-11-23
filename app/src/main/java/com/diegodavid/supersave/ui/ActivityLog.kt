@@ -84,6 +84,7 @@ private fun kindLabel(item: ActivityItem): String = stringResource(
         ActivityKind.INCOME -> R.string.activity_income
         ActivityKind.FIXED_PAYMENT -> R.string.activity_payment
         ActivityKind.CORRECTION -> R.string.activity_correction
+        ActivityKind.STARTING_MONEY -> R.string.activity_starting
         // Negative = money taken back out of savings (a month review changed to Spend it).
         ActivityKind.TO_SAVINGS -> if (item.entry.amount < 0) R.string.activity_from_savings else R.string.activity_to_savings
     }
