@@ -30,6 +30,7 @@ import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.diegodavid.supersave.AppClock
 import com.diegodavid.supersave.R
 import com.diegodavid.supersave.data.Schedule
 import com.diegodavid.supersave.data.ScheduleType
@@ -186,7 +187,7 @@ fun scheduleTypeLabel(type: ScheduleType): String = stringResource(
 fun scheduleSummary(schedule: Schedule): String = when (schedule.type) {
     ScheduleType.EVERY_N_DAYS -> {
         val n = schedule.everyNDays ?: 0
-        pluralStringResource(R.plurals.schedule_every_n_summary, n, n, formatDate(nextOccurrence(schedule, LocalDate.now())))
+        pluralStringResource(R.plurals.schedule_every_n_summary, n, n, formatDate(nextOccurrence(schedule, AppClock.today())))
     }
     ScheduleType.DAY_OF_MONTH -> stringResource(R.string.schedule_day_of_month_summary, schedule.dayOfMonth ?: 0)
     else -> scheduleTypeLabel(schedule.type)

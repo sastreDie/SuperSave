@@ -3,6 +3,9 @@
 
     <string name="debug_load">Cargar datos de prueba</string>
     <string name="debug_clear">Borrar todos los datos</string>
+    <string name="debug_pretend">Fingir que hoy es…</string>
+    <string name="debug_pretending">Depuración: fingiendo que hoy es %1$s</string>
+    <string name="debug_real_date">Usar la fecha real</string>
 
     <string name="setup_step_of">Paso %1$d de %2$d</string>
     <string name="setup_back">Atrás</string>
@@ -62,20 +65,26 @@
 
     <string name="home_week">%1$s – %2$s</string>
     <string name="home_budget_spent">Presupuesto %1$s · gastado %2$s</string>
-    <string name="weigh_button">Pesar un pago</string>
-    <string name="correct_button">Corregir mi saldo (%1$s)</string>
+    <string name="expense_button">Revisar y registrar un gasto</string>
+    <string name="surprise_button">Dinero extra</string>
+    <string name="stat_week_short">Esta semana</string>
+    <string name="stat_month">Queda este mes</string>
+    <string name="stat_balance">Saldo</string>
+    <string name="stat_saved">Ahorrado</string>
+    <string name="home_goal_note">Tu meta de ahorro de este mes (%1$s) ya está apartada.</string>
     <string name="home_expenses_title">Gastos de esta semana</string>
     <string name="home_expenses_empty">Aún no has gastado nada esta semana.</string>
     <string name="home_expense_no_note">Gasto</string>
     <string name="home_delete_title">¿Quitar este gasto?</string>
     <string name="home_delete_body">Los %1$s regresan al presupuesto de esta semana.</string>
 
-    <string name="weigh_title">Pesar un pago</string>
+    <string name="weigh_title">Revisar y registrar un gasto</string>
+    <string name="weigh_after_note">Después de pagarlo.</string>
     <string name="weigh_body">Escribe cuánto cuesta para ver cómo cabe en tu presupuesto antes de pagar.</string>
     <string name="weigh_amount">¿Cuánto cuesta?</string>
     <string name="weigh_note">¿Qué es? (opcional)</string>
     <string name="weigh_skip">Ahora no</string>
-    <string name="weigh_register">Registrar pago</string>
+    <string name="weigh_register">Registrar gasto</string>
     <string name="weigh_fits">¡Sí cabe! Te quedarían %1$s esta semana.</string>
     <string name="weigh_over">Son %1$s más de lo que te queda esta semana.</string>
     <string name="weigh_spread">Lo extra se reparte en el resto del mes: cada semana tendrá unos %1$s menos.</string>
@@ -101,12 +110,26 @@
     <string name="settings_stop_income_body">SuperSave ya no esperará este dinero. Lo que ya recibiste se queda en tu historial.</string>
     <string name="settings_stop_payment_body">SuperSave ya no apartará dinero para este pago. Los pagos anteriores se quedan en tu historial.</string>
 
-    <string name="widget_description">Cuánto te queda esta semana</string>
+    <string name="widget_label">Resumen de SuperSave</string>
+    <string name="widget_description">Esta semana, este mes, tu saldo y tus ahorros</string>
+    <string name="quick_widget_label">Gasto rápido</string>
+    <string name="quick_widget_description">Registra un gasto con un toque</string>
+    <string name="quick_widget_action">+ Registrar gasto</string>
+    <string name="quick_widget_left">Te quedan %1$s esta semana</string>
+
+    <string name="surprise_title">Dinero extra</string>
+    <string name="surprise_body">Dinero que llegó fuera de tus fechas de siempre: un regalo, un trabajo extra, un reembolso.</string>
+    <string name="surprise_amount">¿Cuánto?</string>
+    <string name="surprise_note">¿De dónde viene? (opcional)</string>
+    <string name="surprise_question">¿Qué quieres hacer con él?</string>
+    <string name="surprise_save">Ahorrarlo</string>
+    <string name="surprise_spend">Gastarlo</string>
+    <string name="surprise_save_note">Se va directo a tus ahorros. Tu presupuesto no cambia.</string>
+    <string name="surprise_spend_note">Se suma al dinero de este mes y aparece en tu presupuesto semanal a partir de la próxima semana.</string>
+    <string name="surprise_add">Agregar</string>
     <string name="widget_no_data">Abre SuperSave para configurarlo</string>
 
     <string name="left_this_week">Te queda esta semana</string>
     <string name="payday_badge">¡Esta semana es día de pago!</string>
     <string name="payment_due_badge">Pago esta semana: %1$s</string>
-    <string name="trend_up">¡Buen trabajo! Tu presupuesto subió esta semana gracias a tus hábitos de gasto.</string>
-    <string name="trend_down">La semana pasada nos pegó un poco, así que el presupuesto de esta semana es un poco menor.</string>
 </resources>

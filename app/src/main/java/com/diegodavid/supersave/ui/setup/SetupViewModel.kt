@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.diegodavid.supersave.AppClock
 import com.diegodavid.supersave.data.BudgetRepository
 import com.diegodavid.supersave.data.FixedPayment
 import com.diegodavid.supersave.data.RecurringIncome
@@ -18,7 +19,6 @@ import com.diegodavid.supersave.data.TestData
 import com.diegodavid.supersave.ui.parseMoney
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
-import java.time.LocalDate
 
 /** The setup screens, in order. */
 enum class SetupStep { WELCOME, BALANCE, INCOMES, PAYMENTS, SAVINGS }
@@ -97,7 +97,7 @@ class SetupViewModel(app: Application) : AndroidViewModel(app) {
                         monthlySavingsGoal = goal,
                         defaultReviewChoice = reviewChoice,
                     ),
-                    today = LocalDate.now(),
+                    today = AppClock.today(),
                 )
                 // No navigation needed: MainActivity watches the settings row and
                 // switches to the home screen once it exists.

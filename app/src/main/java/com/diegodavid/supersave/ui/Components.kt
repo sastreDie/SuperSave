@@ -1,6 +1,9 @@
 package com.diegodavid.supersave.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.material3.Card
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.selection.selectable
@@ -62,6 +65,25 @@ fun RadioRow(label: String, selected: Boolean, onSelect: () -> Unit) {
     ) {
         RadioButton(selected = selected, onClick = null)
         Text(label, Modifier.padding(start = 8.dp))
+    }
+}
+
+/**
+ * One number on the dashboard: a small label over the amount (D32).
+ * Negative amounts use the error color: informative, not scolding (D6, D25).
+ */
+@Composable
+fun StatTile(label: String, amount: Long, modifier: Modifier = Modifier, small: Boolean = false) {
+    Card(modifier) {
+        Column(Modifier.padding(horizontal = 12.dp, vertical = if (small) 8.dp else 12.dp)) {
+            Text(label, style = MaterialTheme.typography.labelMedium, maxLines = 1)
+            Text(
+                formatMoney(amount),
+                style = if (small) MaterialTheme.typography.titleSmall else MaterialTheme.typography.titleMedium,
+                color = if (amount < 0) MaterialTheme.colorScheme.error else Color.Unspecified,
+                maxLines = 1,
+            )
+        }
     }
 }
 

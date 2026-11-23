@@ -18,8 +18,12 @@ import com.diegodavid.supersave.engine.startOfWeek
 import com.diegodavid.supersave.engine.weekBudget
 import com.diegodavid.supersave.engine.weekSegments
 import com.diegodavid.supersave.engine.weighPayment
+import com.diegodavid.supersave.AppClock
+import com.diegodavid.supersave.engine.monthCloseTransfer
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
+import java.time.YearMonth
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -34,13 +38,22 @@ data class SetupData(
     val defaultReviewChoice: ReviewChoice,
 )
 
-/** Everything the home screen shows. */
+/** Everything the home screen and the summary widget show (D32). Amounts in cents. */
 data class HomeData(
     val week: WeekSummary,
     /** This week's expenses, newest first. */
     val expenses: List<LedgerEntry>,
     /** What SuperSave thinks is in the account today (D14). */
     val balance: Long,
+    /**
+     * Free money for the rest of the month: spendable money minus payments still due
+     * and the savings goal. It includes what's left this week. Can be negative (D25).
+     */
+    val leftThisMonth: Long,
+    /** The savings bucket (D24): money set aside, inside the balance. */
+    val saved: Long,
+    /** This month's savings goal, already set aside from leftThisMonth. */
+    val goal: Long,
 )
 
 /**
@@ -51,26 +64,34 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
 
     // ---------- Reading ----------
 
-    /** Emits again every time a table that affects the numbers changes. */
-    private fun <T> whenDataChanges(load: suspend () -> T): Flow<T> =
-        db.invalidationTracker
-            .createFlow("ledger", "settings", "fixed_payments", "recurring_incomes")
-            .map { load() }
+    /**
+     * Emits again every time a table that affects the numbers changes, or the date
+     * changes (the debug "pretend today", AppClock).
+     */
+    private fun <T> whenDataChanges(load: suspend (today: LocalDate) -> T): Flow<T> =
+        combine(
+            db.invalidationTracker.createFlow("ledger", "settings", "fixed_payments", "recurring_incomes"),
+            AppClock.pretend,
+        ) { _, _ -> }.map { load(AppClock.today()) }
 
-    fun observeWeek(): Flow<WeekSummary?> = whenDataChanges { currentWeek(LocalDate.now()) }
+    fun observeWeek(): Flow<WeekSummary?> = whenDataChanges { currentWeek(it) }
 
-    fun observeHome(): Flow<HomeData?> = whenDataChanges { home(LocalDate.now()) }
+    fun observeHome(): Flow<HomeData?> = whenDataChanges { home(it) }
 
     fun observeSettings(): Flow<Settings?> = db.settings().observe()
     fun observeIncomes(): Flow<List<RecurringIncome>> = db.recurringIncomes().observeActive()
     fun observePayments(): Flow<List<FixedPayment>> = db.fixedPayments().observeActive()
 
     suspend fun home(today: LocalDate): HomeData? = db.withTransaction {
+        val settings = db.settings().get() ?: return@withTransaction null
         val week = currentWeek(today) ?: return@withTransaction null
         HomeData(
             week = week,
             expenses = db.ledger().expensesBetween(week.week.start, week.week.end),
             balance = balanceOn(today),
+            leftThisMonth = freeMoneyNow(today, settings),
+            saved = savedOn(today),
+            goal = settings.monthlySavingsGoal,
         )
     }
 
@@ -78,6 +99,9 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
     suspend fun currentWeek(today: LocalDate): WeekSummary? = db.withTransaction {
         val settings = db.settings().get() ?: return@withTransaction null
         recordWhatCameDue(today)
+        // Before freezing this week: a new month must first close the old one, so the
+        // savings it moves aren't counted as this month's spending money (D24).
+        closeFinishedMonths(today, settings)
 
         val weekStart = startOfWeek(today, settings.weekStartDayOfWeek)
         val week = DateRange(weekStart, weekStart.plusDays(6))
@@ -88,7 +112,13 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
         val budgets = weekSegments(weekStart)
             .filter { it.start <= today }
             .map { segment ->
-                db.segments().get(segment.start)?.budget ?: freeze(segment, payments, settings)
+                val frozen = db.segments().get(segment.start)?.budget ?: freeze(segment, payments, settings)
+                // A part of the week in a month that has already closed (Nov 30 seen on Dec 1):
+                // its unspent budget went to savings at month close (D33), so it can't count
+                // as "left this week" too. It only counts what was actually spent in it.
+                if (YearMonth.from(segment.start) < YearMonth.from(today)) {
+                    db.ledger().spentBetween(segment.start, segment.end)
+                } else frozen
             }
 
         val budget = weekBudget(budgets)
@@ -146,8 +176,63 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
         if (rows.isNotEmpty()) db.ledger().insertAll(rows)
     }
 
+    /**
+     * Month close (D9, D21, D24, D33). Every month before [today]'s month that has no
+     * MonthReview yet is closed with the default choice from Settings, oldest first
+     * (each close changes the money the next month starts with).
+     */
+    private suspend fun closeFinishedMonths(today: LocalDate, settings: Settings) {
+        // Months start counting from the first week the app ever calculated.
+        val first = db.segments().earliestStart() ?: return
+        var month = YearMonth.from(first)
+        val current = YearMonth.from(today)
+        while (month < current) {
+            if (db.monthReviews().get(month) == null) closeMonth(month, settings)
+            month = month.plusMonths(1)
+        }
+    }
+
+    /**
+     * Moves the month's savings into the savings bucket with a SAVINGS_TRANSFER dated
+     * its last day: the goal, plus the surplus when the choice is Keep it.
+     * The surplus is what's left of the month's LAST segment budget. Money that arrived
+     * during that last segment (e.g. salary on the 30th) was never part of this month's
+     * budget, so it stays spendable for next month (D20).
+     */
+    private suspend fun closeMonth(month: YearMonth, settings: Settings) {
+        val lastDay = month.atEndOfMonth()
+        val last = segmentOf(lastDay, settings)
+        // If the app wasn't opened during that segment, freeze it now, as it would have been.
+        val budget = db.segments().get(last.start)?.budget ?: freeze(last, db.fixedPayments().all(), settings)
+        val leftover = budget - db.ledger().spentBetween(last.start, last.end)
+        val keep = settings.defaultReviewChoice == ReviewChoice.KEEP
+        val toSavings = monthCloseTransfer(settings.monthlySavingsGoal, leftover, keep)
+
+        db.monthReviews().insert(
+            MonthReview(month, savingsGoal = settings.monthlySavingsGoal, surplus = leftover.coerceAtLeast(0))
+        )
+        if (toSavings > 0) {
+            db.ledger().insert(LedgerEntry(date = lastDay, amount = toSavings, type = EntryType.SAVINGS_TRANSFER))
+        }
+    }
+
     /** Everything in the account at the end of [today] (savings included, D24). */
     private suspend fun balanceOn(today: LocalDate): Long = db.ledger().balanceBefore(today.plusDays(1))
+
+    /** The savings bucket at the end of [today] (D24). */
+    private suspend fun savedOn(today: LocalDate): Long = db.ledger().savedBefore(today.plusDays(1))
+
+    /**
+     * Free money right now, for the rest of the month (D25 formula, as of today).
+     * Today's payments are already in the balance (recordWhatCameDue), so only later ones count.
+     */
+    private suspend fun freeMoneyNow(today: LocalDate, settings: Settings): Long {
+        val monthEnd = today.withDayOfMonth(today.lengthOfMonth())
+        val stillDue = if (today < monthEnd) {
+            paymentsDueIn(db.fixedPayments().all(), DateRange(today.plusDays(1), monthEnd))
+        } else emptyList()
+        return freeMoney(balanceOn(today) - savedOn(today), stillDue, settings.monthlySavingsGoal)
+    }
 
     /** The part of the week that contains [today] (D17). */
     private fun segmentOf(today: LocalDate, settings: Settings): DateRange =
@@ -160,14 +245,8 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
         val settings = db.settings().get() ?: return@withTransaction null
         val week = currentWeek(today) ?: return@withTransaction null
         val monthEnd = today.withDayOfMonth(today.lengthOfMonth())
-        val spendable = balanceOn(today) - db.ledger().savedBefore(today.plusDays(1))
-        // Today's payments are already in the balance (recordWhatCameDue), so only later ones.
-        val stillDue = if (today < monthEnd) {
-            paymentsDueIn(db.fixedPayments().all(), DateRange(today.plusDays(1), monthEnd))
-        } else emptyList()
-        val free = freeMoney(spendable, stillDue, settings.monthlySavingsGoal)
         val daysAfter = ChronoUnit.DAYS.between(segmentOf(today, settings).end, monthEnd).toInt()
-        weighPayment(amount, week.left, free, daysAfter)
+        weighPayment(amount, week.left, freeMoneyNow(today, settings), daysAfter)
     }
 
     // ---------- Writing ----------
@@ -209,6 +288,20 @@ class BudgetRepository(private val db: SuperSaveDatabase) {
     }
 
     suspend fun deleteExpense(id: Long) = db.ledger().deleteExpense(id)
+
+    /**
+     * Surprise money (D7, D31): a one-off INCOME row with no incomeId.
+     * [save] = true: the same amount also goes into the savings bucket (D24), so it's
+     * in the balance but not in spendable money, and the budget doesn't change.
+     * [save] = false: it becomes spendable money. Like any income it counts from the
+     * next segment (D4), spread over the rest of the month.
+     */
+    suspend fun addSurpriseMoney(amount: Long, note: String?, save: Boolean, today: LocalDate) = db.withTransaction {
+        db.ledger().insert(LedgerEntry(date = today, amount = amount, type = EntryType.INCOME, note = note))
+        if (save) {
+            db.ledger().insert(LedgerEntry(date = today, amount = amount, type = EntryType.SAVINGS_TRANSFER, note = note))
+        }
+    }
 
     /**
      * "Correct my balance" (D14, D18). Writes the difference as a BALANCE_CORRECTION

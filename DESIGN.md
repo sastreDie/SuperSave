@@ -36,6 +36,11 @@ Compare this week's budget to last week's:
 - Down: *"We took a bit of a hit last week, so this week's budget is a little lower."*
 - Tone: rewarding when things go well, neutral and informative otherwise. Never scolding.
 
+**Update:** taken out of the first version (Diego). Seeing the message every time
+felt bad. Idea for later: show it once per week, as a speech bubble that fades
+after a couple of seconds the first time home is opened in a new segment.
+The tone rule still applies to every other message.
+
 ### D7. Many income sources (Diego)
 - **Recurring incomes**, each with its own schedule (see D8).
 - **One-off extra income** ("I made some unexpected money"), added on any day.
@@ -197,6 +202,9 @@ division is the "each week gets about … less" estimate, which rounds **down**
 like every other division in the app (D26, Diego). Messages are informative,
 never scolding (D6).
 
+On screen it's called **"Check & record an expense"** (Diego asked for a name that
+says it does both), and there's a quick-expense widget that opens it directly.
+
 ### D30. Fixed payments and incomes are recorded when the app calculates (Claude, to confirm)
 Instead of a WorkManager job, every time the app or the widget calculates, each
 fixed payment and recurring income that came due up to today and has no ledger
@@ -204,6 +212,40 @@ row yet gets one, dated its due day (D15). Nothing is missed if the phone was of
 and nothing is written twice. Cancelling a payment or ending an income stops it
 from that day on. Editing one restarts its schedule from today. The real amount
 can still differ (e.g. a smaller paycheck); Correct my balance fixes that (D14).
+
+### D31. Surprise money: save it or spend it (Diego)
+A button on the home screen adds one-off money that isn't on any schedule (D7).
+The user picks, with the Keep it / Spend it setting as the default (D21):
+- **Save it:** an `INCOME` row plus a `SAVINGS_TRANSFER` of the same amount. It's
+  in the balance but in the savings bucket (D24), so the budget doesn't change.
+- **Spend it:** just the `INCOME` row. It becomes spendable money for the month and,
+  like any money received mid-week, counts from the **next week** (D4), spread over
+  the rest of the month. In the last week of a month it goes into the next month.
+
+### D32. The home screen is a dashboard (Diego)
+Biggest: **left this week**. Then three tiles: **left this month** (free money for
+the rest of the month, as of today, this week included; D25), **balance** (what
+the app thinks is in the account, D14) and **saved** (the savings bucket, D24).
+The expense screen shows a smaller version (this week, this month, balance) that
+updates as the amount is typed. The summary widget shows the same numbers and
+opens the app when tapped. It adapts to its size, from 2×1 (only this week) up to
+4×3 (everything, plus the D13 badge).
+
+### D33. Month close moves savings automatically (Claude, to confirm; follows D9, D21, D24)
+Found by Diego: the savings goal was set aside during the month but never saved,
+so every new month spent it again. Now, when a month ends and nobody reviewed it,
+it closes with the default choice (D21), dated its last day:
+- The **goal** goes into the savings bucket, minus any overspend in the last week
+  (there are no weeks left to spread it over, D29). Closing never takes money
+  out of savings.
+- The **surplus** is what's left of the month's last segment budget. With Keep it
+  it's saved too; with Spend it, it stays spendable and grows next month.
+- Money that arrived during that last segment (e.g. salary on the 30th) was never
+  part of this month's budget, so it carries over to next month (D20).
+
+If the app wasn't opened for a while, each missed month closes in order the next
+time it calculates. The screen to review a month and change the choice (D9) is
+still to be built.
 
 ---
 

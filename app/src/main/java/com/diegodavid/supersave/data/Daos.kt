@@ -104,9 +104,23 @@ interface SegmentDao {
     @Query("SELECT * FROM segments WHERE start BETWEEN :from AND :to ORDER BY start")
     suspend fun startingBetween(from: LocalDate, to: LocalDate): List<Segment>
 
+    /** The first week the app ever calculated: month close starts from its month. */
+    @Query("SELECT MIN(start) FROM segments")
+    suspend fun earliestStart(): LocalDate?
+
     /** D18: the one way a frozen budget changes, a balance correction. */
     @Query("UPDATE segments SET budget = budget + :delta WHERE start = :start")
     suspend fun addToBudget(start: LocalDate, delta: Long)
+}
+
+@Dao
+interface MonthReviewDao {
+    /** IGNORE: a month is closed only once. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(review: MonthReview)
+
+    @Query("SELECT * FROM month_reviews WHERE month = :month")
+    suspend fun get(month: java.time.YearMonth): MonthReview?
 }
 
 @Dao

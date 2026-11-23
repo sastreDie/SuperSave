@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.time.LocalDate
+import com.diegodavid.supersave.AppClock
 
 /**
  * Shared by the screens after setup: home, weigh, correct balance, settings.
@@ -36,13 +36,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val incomes: StateFlow<List<RecurringIncome>> = repository.observeIncomes().asState(emptyList())
     val payments: StateFlow<List<FixedPayment>> = repository.observePayments().asState(emptyList())
 
-    private fun today() = LocalDate.now()
+    private fun today() = AppClock.today()
     private fun run(block: suspend () -> Unit) { viewModelScope.launch { block() } }
 
     suspend fun weigh(amount: Long): Weighing? = repository.weigh(amount, today())
 
     fun addExpense(amount: Long, note: String?) = run { repository.addExpense(today(), amount, note) }
     fun deleteExpense(id: Long) = run { repository.deleteExpense(id) }
+    fun addSurpriseMoney(amount: Long, note: String?, save: Boolean) =
+        run { repository.addSurpriseMoney(amount, note, save, today()) }
     fun correctBalance(real: Long) = run { repository.correctBalance(real, today()) }
 
     fun saveSettings(settings: Settings) = run { repository.saveSettings(settings) }

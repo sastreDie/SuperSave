@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.diegodavid.supersave.AppClock
 import com.diegodavid.supersave.R
 import com.diegodavid.supersave.data.ReviewChoice
 import com.diegodavid.supersave.data.Schedule
@@ -41,7 +42,6 @@ import com.diegodavid.supersave.ui.ScreenTitle
 import com.diegodavid.supersave.ui.formatMoney
 import com.diegodavid.supersave.ui.scheduleSummary
 import java.time.DayOfWeek
-import java.time.LocalDate
 
 /**
  * First-run setup (D10 step 4): week start, balance, incomes, fixed payments, savings.
@@ -172,7 +172,7 @@ private fun RecurringList(
 ) {
     var adding by rememberSaveable { mutableStateOf(false) }
     // D28: anything due today is already in the balance the user typed, so count from tomorrow.
-    val tomorrow = remember { LocalDate.now().plusDays(1) }
+    val tomorrow = remember { AppClock.today().plusDays(1) }
 
     if (items.isEmpty() && !adding) {
         Text(stringResource(emptyText), style = MaterialTheme.typography.bodyMedium)

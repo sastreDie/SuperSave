@@ -28,6 +28,7 @@ abstract class SuperSaveDatabase : RoomDatabase() {
     abstract fun fixedPayments(): FixedPaymentDao
     abstract fun recurringIncomes(): RecurringIncomeDao
     abstract fun segments(): SegmentDao
+    abstract fun monthReviews(): MonthReviewDao
     abstract fun settings(): SettingsDao
 
     companion object {

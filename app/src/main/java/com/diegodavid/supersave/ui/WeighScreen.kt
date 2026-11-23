@@ -26,12 +26,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.diegodavid.supersave.R
 import com.diegodavid.supersave.engine.Weighing
 
 /**
- * Weigh the payment (D29): type what something costs, see how it fits before paying,
- * then register it as an expense or skip it. Nothing is saved until "Register".
+ * "Check & record an expense" (D29, called Weigh the payment in the design): type what
+ * something costs, see how it fits before paying, then record it or skip it.
+ * Nothing is saved until "Record expense".
  * (UI by Claude, Nivel 2.)
  */
 @Composable
@@ -39,6 +41,7 @@ fun WeighScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modi
     var amountText by rememberSaveable { mutableStateOf("") }
     var note by rememberSaveable { mutableStateOf("") }
     val amount = parseMoney(amountText)?.takeIf { it > 0 }
+    val home by vm.home.collectAsStateWithLifecycle()
 
     // Recalculated every time the amount changes. Reads the database, so it runs in a coroutine.
     val weighing by produceState<Weighing?>(null, amount) {
@@ -51,6 +54,20 @@ fun WeighScreen(vm: MainViewModel, onDone: () -> Unit, modifier: Modifier = Modi
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             ScreenTitle(stringResource(R.string.weigh_title), stringResource(R.string.weigh_body))
+
+            // Mini dashboard (D32): what matters, after paying the amount typed so far.
+            home?.let { h ->
+                val cost = amount ?: 0L
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    StatTile(stringResource(R.string.stat_week_short), h.week.left - cost, Modifier.weight(1f), small = true)
+                    StatTile(stringResource(R.string.stat_month), h.leftThisMonth - cost, Modifier.weight(1f), small = true)
+                    StatTile(stringResource(R.string.stat_balance), h.balance - cost, Modifier.weight(1f), small = true)
+                }
+                if (amount != null) {
+                    Text(stringResource(R.string.weigh_after_note), style = MaterialTheme.typography.bodySmall)
+                }
+            }
+
             MoneyField(
                 value = amountText,
                 onValueChange = { amountText = it },

@@ -28,11 +28,11 @@ import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.diegodavid.supersave.AppClock
 import com.diegodavid.supersave.R
 import com.diegodavid.supersave.data.ReviewChoice
 import com.diegodavid.supersave.data.Schedule
 import java.time.DayOfWeek
-import java.time.LocalDate
 
 /**
  * Everything from setup, editable: week start (D2), savings goal, review default (D21),
@@ -54,7 +54,7 @@ fun SettingsScreen(vm: MainViewModel, onBack: () -> Unit, modifier: Modifier = M
     var editing by rememberSaveable { mutableStateOf<String?>(null) }
     var stopping by remember { mutableStateOf<Stop?>(null) }
     // Changes made here count from today (unlike setup, which counts from tomorrow, D28).
-    val today = remember { LocalDate.now() }
+    val today = remember { AppClock.today() }
     val focusManager = LocalFocusManager.current
 
     Column(

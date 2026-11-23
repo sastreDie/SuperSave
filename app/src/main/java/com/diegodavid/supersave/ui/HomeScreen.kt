@@ -24,22 +24,24 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.diegodavid.supersave.R
 import com.diegodavid.supersave.data.LedgerEntry
-import com.diegodavid.supersave.engine.BudgetTrend
 import kotlin.math.absoluteValue
 
 /**
- * The main screen: how much is left this week, the D6 message, the D13 badges,
- * and this week's expenses. Replaces the old debug screen. (UI by Claude, Nivel 2.)
+ * The main screen, as a dashboard (D32): this week's money in the biggest card, then
+ * the month, the balance and savings; the D13 badges; the actions;
+ * and this week's expenses. (UI by Claude, Nivel 2.)
  */
 @Composable
 fun HomeScreen(
     vm: MainViewModel,
-    onWeigh: () -> Unit,
+    onExpense: () -> Unit,
+    onSurprise: () -> Unit,
     onCorrect: () -> Unit,
     onSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -53,6 +55,7 @@ fun HomeScreen(
         modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        PretendDateBanner()
         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             Text(
                 stringResource(R.string.home_week, formatDate(week.week.start), formatDate(week.week.end)),
@@ -62,31 +65,49 @@ fun HomeScreen(
             TextButton(onClick = onSettings) { Text(stringResource(R.string.settings_title)) }
         }
 
-        Text(stringResource(R.string.left_this_week), style = MaterialTheme.typography.titleMedium)
-        Text(formatMoney(week.left), style = MaterialTheme.typography.displayMedium)
-        Text(
-            stringResource(R.string.home_budget_spent, formatMoney(week.budget), formatMoney(week.spent)),
-            style = MaterialTheme.typography.bodyMedium,
-        )
-
-        // D6: compare with last week. Rewarding when up, neutral when down.
-        when (week.trend) {
-            BudgetTrend.UP -> MessageCard(stringResource(R.string.trend_up))
-            BudgetTrend.DOWN -> MessageCard(stringResource(R.string.trend_down))
-            else -> {}
+        // The biggest number: what's left to spend this week (D3).
+        Card(
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.padding(20.dp)) {
+                Text(stringResource(R.string.left_this_week), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    formatMoney(week.left),
+                    style = MaterialTheme.typography.displayMedium,
+                    color = if (week.left < 0) MaterialTheme.colorScheme.error else Color.Unspecified,
+                )
+                Text(
+                    stringResource(R.string.home_budget_spent, formatMoney(week.budget), formatMoney(week.spent)),
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
         }
-        // D13 heads-up badges.
+
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            StatTile(stringResource(R.string.stat_month), home.leftThisMonth, Modifier.weight(1f))
+            StatTile(stringResource(R.string.stat_balance), home.balance, Modifier.weight(1f))
+            StatTile(stringResource(R.string.stat_saved), home.saved, Modifier.weight(1f))
+        }
+        Text(stringResource(R.string.home_goal_note, formatMoney(home.goal)), style = MaterialTheme.typography.bodySmall)
+
+        // D13 heads-up badges. (The D6 "good job" messages are out of the first version.)
         if (week.payday) MessageCard(stringResource(R.string.payday_badge))
         if (week.paymentsDue.isNotEmpty()) {
             MessageCard(stringResource(R.string.payment_due_badge, week.paymentsDue.joinToString()))
         }
 
-        Button(onClick = onWeigh, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.weigh_button))
+        Button(onClick = onExpense, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.expense_button))
         }
-        // D14: "Correct my balance" must be easy to find.
-        OutlinedButton(onClick = onCorrect, modifier = Modifier.fillMaxWidth()) {
-            Text(stringResource(R.string.correct_button, formatMoney(home.balance)))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            OutlinedButton(onClick = onSurprise, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.surprise_button))
+            }
+            // D14: "Correct my balance" must be easy to find.
+            OutlinedButton(onClick = onCorrect, modifier = Modifier.weight(1f)) {
+                Text(stringResource(R.string.correct_title))
+            }
         }
 
         SectionTitle(stringResource(R.string.home_expenses_title))
@@ -112,6 +133,7 @@ fun HomeScreen(
             TextButton(onClick = { vm.loadTestData() }) { Text(stringResource(R.string.debug_load)) }
             TextButton(onClick = { vm.clearAll() }) { Text(stringResource(R.string.debug_clear)) }
         }
+        PretendDateButton()
     }
 
     deleting?.let { e ->

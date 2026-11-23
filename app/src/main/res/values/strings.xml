@@ -5,6 +5,9 @@
     <!-- Debug tools (temporary) -->
     <string name="debug_load">Load test data</string>
     <string name="debug_clear">Clear all data</string>
+    <string name="debug_pretend">Pretend today is…</string>
+    <string name="debug_pretending">Debug: pretending today is %1$s</string>
+    <string name="debug_real_date">Use the real date</string>
 
     <!-- Setup flow -->
     <string name="setup_step_of">Step %1$d of %2$d</string>
@@ -66,8 +69,13 @@
     <!-- Home -->
     <string name="home_week">%1$s – %2$s</string>
     <string name="home_budget_spent">Budget %1$s · spent %2$s</string>
-    <string name="weigh_button">Weigh a payment</string>
-    <string name="correct_button">Correct my balance (%1$s)</string>
+    <string name="expense_button">Check &amp; record an expense</string>
+    <string name="surprise_button">Surprise money</string>
+    <string name="stat_week_short">This week</string>
+    <string name="stat_month">Left this month</string>
+    <string name="stat_balance">Balance</string>
+    <string name="stat_saved">Saved</string>
+    <string name="home_goal_note">This month\'s savings goal of %1$s is already set aside.</string>
     <string name="home_expenses_title">This week\'s expenses</string>
     <string name="home_expenses_empty">Nothing spent this week yet.</string>
     <string name="home_expense_no_note">Expense</string>
@@ -75,12 +83,13 @@
     <string name="home_delete_body">The %1$s goes back into this week\'s budget.</string>
 
     <!-- Weigh the payment (D29) -->
-    <string name="weigh_title">Weigh a payment</string>
+    <string name="weigh_title">Check &amp; record an expense</string>
+    <string name="weigh_after_note">After paying it.</string>
     <string name="weigh_body">Type what it costs to see how it fits your budget before you pay.</string>
     <string name="weigh_amount">How much is it?</string>
     <string name="weigh_note">What is it? (optional)</string>
     <string name="weigh_skip">Not now</string>
-    <string name="weigh_register">Register payment</string>
+    <string name="weigh_register">Record expense</string>
     <string name="weigh_fits">It fits! You\'d still have %1$s left this week.</string>
     <string name="weigh_over">That\'s %1$s more than you have left this week.</string>
     <string name="weigh_spread">The extra is spread over the rest of the month: each week gets about %1$s less.</string>
@@ -109,14 +118,28 @@
     <string name="settings_stop_payment_body">SuperSave won\'t set money aside for it anymore. Past payments stay in your history.</string>
 
     <!-- Widget picker -->
-    <string name="widget_description">How much you have left this week</string>
+    <string name="widget_label">SuperSave summary</string>
+    <string name="widget_description">This week, this month, your balance and savings</string>
+    <string name="quick_widget_label">Quick expense</string>
+    <string name="quick_widget_description">Record an expense in one tap</string>
+    <string name="quick_widget_action">+ Record expense</string>
+    <string name="quick_widget_left">%1$s left this week</string>
+
+    <!-- Surprise money (D31) -->
+    <string name="surprise_title">Surprise money</string>
+    <string name="surprise_body">Money that came in outside your usual schedule: a gift, a side job, a refund.</string>
+    <string name="surprise_amount">How much?</string>
+    <string name="surprise_note">Where is it from? (optional)</string>
+    <string name="surprise_question">What do you want to do with it?</string>
+    <string name="surprise_save">Save it</string>
+    <string name="surprise_spend">Spend it</string>
+    <string name="surprise_save_note">It goes straight to your savings. Your budget stays the same.</string>
+    <string name="surprise_spend_note">It\'s added to this month\'s money and shows up in your weekly budget starting next week.</string>
+    <string name="surprise_add">Add</string>
     <string name="widget_no_data">Open SuperSave to set up</string>
 
     <!-- Shared by the app and the widget -->
     <string name="left_this_week">Left this week</string>
     <string name="payday_badge">Pay day this week!</string>
     <string name="payment_due_badge">Payment due this week: %1$s</string>
-    <!-- D6 messages -->
-    <string name="trend_up">Good job! Your budget increased this week thanks to your spending habits!</string>
-    <string name="trend_down">We took a bit of a hit last week, so this week\'s budget is a little lower.</string>
 </resources>
